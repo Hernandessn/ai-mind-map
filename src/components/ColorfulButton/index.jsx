@@ -2,10 +2,14 @@ import { Button } from "./styles";
 
 
 
-export function ColorfulButton() {
+export function ColorfulButton({ children ,...props }) {
+
+    
+
+
   return (
-    <Button>
-        Come
+    <Button {...props}>
+        {children}
     </Button>
   );
 }

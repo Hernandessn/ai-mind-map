@@ -19,13 +19,9 @@ export const Apresentation = () => {
       </RobotIcon>
       <Title>Soluções inteligentes em IA</Title>
       <Subtitle>Transforme suas ideias em mapas mentais com IA, de forma simples e rápida!</Subtitle>
-    <ColorfulButton>
-      {
-         setTimeout(() => {    
-           <Link to="/home" > </Link>
-      }, 3000)
-      }
-      </ColorfulButton>
+      <Link to="/home" >
+      <ColorfulButton>Começar</ColorfulButton>
+      </Link>
       
     </Container>
   );
