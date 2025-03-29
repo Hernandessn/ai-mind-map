@@ -20,7 +20,7 @@ export const Apresentation = () => {
       <Title>Soluções inteligentes em IA</Title>
       <Subtitle>Transforme suas ideias em mapas mentais com IA, de forma simples e rápida!</Subtitle>
       <Link to="/home" >
-      <ColorfulButton>Começar</ColorfulButton>
+      <ColorfulButton $theme={false}>Começar</ColorfulButton>
       </Link>
       
     </Container>

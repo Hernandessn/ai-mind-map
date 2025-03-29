@@ -7,8 +7,11 @@ export const Button = styled.button`
   border-radius: 25px;
   position: relative;
   background: linear-gradient(60deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82);
+  background: 
+  ${(props)=> props.$theme === true ? "transparent" 
+  : "linear-gradient(60deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82)"};
   cursor: pointer;
-  border: 2px solid transparent; /* Borda invisível inicialmente */
+  border: ${props => props.$theme === true ? "2px solid #ffff" : "2px solid transparent"}; 
   color: white;
   font-size: 16px;
   font-weight: bold;
