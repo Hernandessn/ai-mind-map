@@ -1,36 +1,40 @@
 import styled from "styled-components";
-
+import { theme } from '../../styles/theme';
 
 export const Button = styled.button`
-  width: 150px;
-  height: 50px;
-  border-radius: 25px;
-  position: relative;
-  background: linear-gradient(60deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82);
-  background: 
-  ${(props)=> props.$theme === true ? "transparent" 
-  : "linear-gradient(60deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82)"};
-  cursor: pointer;
-  border: ${props => props.$theme === true ? "2px solid #ffff" : "2px solid transparent"}; 
-  color: white;
+  padding: 12px 30px;
   font-size: 16px;
-  font-weight: bold;
-  outline: none;
-  text-align: center;
-  transition: border-color 0.3s ease-in-out; /* Animação suave da borda */
-
-  &::after {
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #00f3ff, #8a2be2); /* Cores definidas diretamente: ciano e roxo */
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  
+  &::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    transform: scale(0);
+    opacity: 0;
+    transition: transform 0.6s, opacity 0.6s;
   }
-
+  
   &:hover {
-    background: linear-gradient(60deg, #f79533, #f37055, #ef4e7b, #a166ab, #5073b8, #1098ad, #07b39b, #6fba82);
-    box-shadow: 0 0 25px rgba(10, 124, 177, 0.8); /* Sombra ao passar o mouse */
-    transition: all 0.3s ease-in-out; /* Animação suave ao passar o mouse */
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.8);
+  }
+  
+  &:hover::before {
+    transform: scale(1);
+    opacity: 1;
   }
   `;

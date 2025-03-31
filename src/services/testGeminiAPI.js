@@ -8,7 +8,7 @@ export async  function ServicesGemini() {
   async function main() {
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: "Boa noite!",
+      contents: "Bom dia!",
     });
     console.log(response.text);
   }

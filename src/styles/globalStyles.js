@@ -11,6 +11,13 @@ import { createGlobalStyle } from "styled-components";
         font-weight: 400;
         font-style: normal;
     }
+    body {
+    background: linear-gradient(135deg, #000510 0%, #001b29 50%, #000510 100%);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
     button,a{
         cursor: pointer;
