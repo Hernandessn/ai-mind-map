@@ -16,7 +16,7 @@ export const Presentation = () => {
   return (
     <Container>
       <RobotIcon>
-        <Image src={FaceRobotImg} alt="Robot Icon" />
+        <Image src={RobotImg} alt="Robot Icon" />
       </RobotIcon>
       <Title>Soluções inteligentes em IA</Title>
       <Subtitle>Transforme suas ideias em mapas mentais com IA, de forma simples e rápida!</Subtitle>

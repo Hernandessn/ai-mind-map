@@ -142,3 +142,12 @@ export const GenerateButton = styled.button`
     opacity: 1;
   }
 `;
+
+
+export const SectionCards = styled.section`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+ 
+ 
+`;
