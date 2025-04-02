@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { theme } from '../../styles/theme';
-// Componentes estilizados com responsividade
+
+// Componentes estilizados com responsividade aprimorada
 export const Card = styled.div`
   background-color: rgba(0, 27, 41, 0.7);
   border: 2px solid rgba(0, 243, 255, 0.3);
@@ -36,12 +37,27 @@ export const Card = styled.div`
     font-size: 14px;
   }
   
+  @media (max-width: 1200px) {
+    width: 30%;
+  }
+  
+  @media (max-width: 992px) {
+    width: 45%;
+  }
+  
   @media (max-width: 768px) {
-    max-width: 100%;
+    width: 47%;
+    margin: 1.5%;
+    padding: 8px;
+  }
+  
+  @media (max-width: 576px) {
+    width: 80%;
+    margin: 10px 0;
   }
 `;
 
-export const Image = styled.div`
+export const ImageCard = styled.div`
   width: 100%;
   height: 180px;
   background-color: rgba(0, 13, 20, 0.5);
@@ -49,33 +65,52 @@ export const Image = styled.div`
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   
   img {
     width: 80%;
+    transition: transform 0.3s ease;
   }
   
   ${Card}:hover & img {
     transform: scale(1.05);
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: 1200px) {
+    height: 170px;
+  }
+  
+  @media (max-width: 992px) {
     height: 160px;
   }
   
-  @media (max-width: 480px) {
-    height: 140px;
+  @media (max-width: 768px) {
+    height: 150px;
   }
-`;
-
-export const Info = styled.div`
-  padding: 20px;
+  
+  @media (max-width: 576px) {
+    height: 180px;
+  }
   
   @media (max-width: 480px) {
-    padding: 15px;
+    height: 160px;
   }
 `;
 
-export const Name = styled.h3`
+export const CardInfo = styled.div`
+  padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 15px 10px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 15px 10px 10px;
+  }
+`;
+
+export const CardName = styled.h3`
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 10px;
@@ -97,17 +132,27 @@ export const Name = styled.h3`
     width: 60px;
   }
   
+  @media (max-width: 768px) {
+    font-size: 17px;
+  }
+  
   @media (max-width: 480px) {
     font-size: 16px;
+    margin-bottom: 8px;
   }
 `;
 
-export const Desc = styled.p`
+export const CardDesc = styled.p`
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.5;
   
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     font-size: 13px;
+    line-height: 1.4;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 12px;
   }
 `;

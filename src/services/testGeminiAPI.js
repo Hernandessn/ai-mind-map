@@ -1,4 +1,4 @@
-
+/** 
 import { GoogleGenAI } from "@google/genai";
 
 export async  function ServicesGemini() {
@@ -16,7 +16,7 @@ await main();
 }
 
 ServicesGemini();
-
+*/
 
 
 

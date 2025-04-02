@@ -1,4 +1,4 @@
-import { Card, Desc, Image, Info, Name } from "./styles";
+import { Card, CardDesc, ImageCard, CardInfo, CardName } from "./styles";
 
 // Componente principal de TemplateCards
 export const TemplateCards = ({ isSelected, onClick, $img, $name, $Description}) => {
@@ -8,15 +8,15 @@ export const TemplateCards = ({ isSelected, onClick, $img, $name, $Description})
       className={isSelected ? 'selected' : ''}
       onClick={onClick}
     >
-      <Image>
+      <ImageCard>
         <img src={$img} alt="Imagem" />
-      </Image>
-      <Info>
-        <Name>{$name}</Name>
-        <Desc>
+      </ImageCard>
+      <CardInfo>
+        <CardName>{$name}</CardName>
+        <CardDesc>
          {$Description}
-        </Desc>
-      </Info>
+        </CardDesc>
+      </CardInfo>
     </Card>
   );
 };

@@ -8,8 +8,8 @@ import {
   Subtitle
 } from './styles';
 import RobotImg from '../../assets/robot.png'; // Assuming the path to your image
-import FaceRobotImg from '../../assets/face-robot.png'; // Assuming the path to your image
-import { ColorfulButton } from '../../components/ColorfulButton';
+import { DefaultButton } from '../../components/Button';
+import { theme } from '../../styles/theme';
 
 export const Presentation = () => {
   
@@ -21,7 +21,9 @@ export const Presentation = () => {
       <Title>Soluções inteligentes em IA</Title>
       <Subtitle>Transforme suas ideias em mapas mentais com IA, de forma simples e rápida!</Subtitle>
       <Link to="/home" >
-      <ColorfulButton $theme={false}>Começar</ColorfulButton>
+      <DefaultButton $gradient $colorStart={theme.colors.neonBlue} $colorEnd={theme.colors.neonPurple}>
+        Começar
+      </DefaultButton>
       </Link>
       
     </Container>
