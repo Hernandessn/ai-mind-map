@@ -8,14 +8,17 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "nodemon src/services/testGeminiApi.js"
+    "test": "nodemon src/services/testGeminiApi.js",
+    "check": "node src/services/checkModels.js"
   },
   "dependencies": {
     "@google/genai": "^0.7.0",
+    "@google/generative-ai": "^0.24.0",
     "@phosphor-icons/react": "^2.1.7",
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",
     "lucide-react": "^0.486.0",
+    "node-fetch": "^3.3.2",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

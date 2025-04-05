@@ -1,6 +1,7 @@
 import { Button } from "./styles";
 
-export function DefaultButton({ children, $color, $colorStart, $colorEnd, $gradient, $rounded, $borderColor, ...props }) {
+export function DefaultButton({ children, $color, $colorStart,
+   $colorEnd, $gradient, $rounded, $borderColor, ...props }) {
   return (
     <Button
       $color={$color}

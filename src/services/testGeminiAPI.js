@@ -1,22 +1,20 @@
-/** 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async  function ServicesGemini() {
-  
- const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY_GEMINI  });
 
-  async function main() {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: "Bom dia!",
-    });
-    console.log(response.text);
+const genAI = new GoogleGenerativeAI( import.meta.env.VITE_API_KEY_GEMINI);
+
+export async function ServicesGemini(prompt) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash-latest" });
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    return text;
+
+  } catch (error) {
+    console.error("Erro ao chamar a IA:", error);
+    return "Erro ao gerar mapa mental.";
   }
-await main();
 }
-
-ServicesGemini();
-*/
-
-
-

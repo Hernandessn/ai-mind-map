@@ -1,24 +1,23 @@
+import React, { useState, useEffect } from 'react';
 import { Card, CardDesc, ImageCard, CardInfo, CardName } from "./styles";
 
-// Componente principal de TemplateCards
-export const TemplateCards = ({ isSelected, onClick, $img, $name, $Description}) => {
+// Componente individual de TemplateCard
+export const TemplateCards = ({ isSelected, onClick, img, name, Description, dataTemplate }) => {
   return (
     <Card
-      data-template="radial" 
-      className={isSelected ? 'selected' : ''}
+      data-template={dataTemplate}
+      className={isSelected ? 'selected' : ''}	
       onClick={onClick}
     >
       <ImageCard>
-        <img src={$img} alt="Imagem" />
+        <img src={img} alt={`Imagem do modelo ${name}`} />
       </ImageCard>
       <CardInfo>
-        <CardName>{$name}</CardName>
+        <CardName>{name}</CardName>
         <CardDesc>
-         {$Description}
+          {Description}
         </CardDesc>
       </CardInfo>
     </Card>
   );
 };
-
-export default TemplateCards;
