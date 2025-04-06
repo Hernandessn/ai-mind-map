@@ -44,7 +44,9 @@ export function Home() {
     if(!topic) return alert("Porfavor digite um tema!");
 
     const response = await ServicesGemini(topic);
-    console.log("Resposta da IA:", response);
+    setMapResult(response);
+    console.log("Resposta da IA", response);
+    
     
   }
 
@@ -88,6 +90,21 @@ export function Home() {
             </ButtonContainer>
           </ContainerComponent>
         </InputSection>
+        {mapResult && (
+  <div style={{
+    background: '#1e1e2f',
+    color: '#fff',
+    padding: '16px',
+    borderRadius: '8px',
+    margin: '20px',
+    maxHeight: '300px',
+    overflowY: 'auto',
+    whiteSpace: 'pre-line'
+  }}>
+    {mapResult}
+  </div>
+)}
+
         <SectionCards>
           <TemplateCards 
             img={radialImage}
@@ -108,18 +125,18 @@ export function Home() {
           />
           
           <TemplateCards 
-            $img={linearImage}
-            $name="Linear"
-            $Description="Ideal para processos sequenciais, linhas do tempo, ou fluxos de trabalho com etapas claras e ordenadas."
+            img={linearImage}
+            name="Linear"
+            Description="Ideal para processos sequenciais, linhas do tempo, ou fluxos de trabalho com etapas claras e ordenadas."
             dataTemplate="linear"
             isSelected={selectedTemplate === "linear"}
             onClick={() => handleCardClick("linear")}
           />
           
           <TemplateCards 
-            $img={gradeImage}
-            $name="Grade"
-            $Description="Perfeito para comparações, matrizes de decisão ou organização de conceitos em categorias bem definidas."
+            img={gradeImage}
+            name="Grade"
+            Description="Perfeito para comparações, matrizes de decisão ou organização de conceitos em categorias bem definidas."
             dataTemplate="grade"
             isSelected={selectedTemplate === "grade"}
             onClick={() => handleCardClick("grade", console.log("Grade"))}
