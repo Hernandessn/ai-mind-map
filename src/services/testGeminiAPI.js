@@ -1,7 +1,7 @@
 // src/services/testGeminiAPI.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI('AIzaSyBe98XifyCh7G2G7tRBHzB_NyvA288tqNY');
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY_GEMINI);
 
 export async function ServicesGemini(prompt) {
   try {
