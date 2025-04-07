@@ -25,9 +25,13 @@ import linearImage from '/src/assets/map-linear.png';
 import hierarquicoImage from '/src/assets/map-hierarquico.png';
 import gradeImage from '/src/assets/map-grade.png';
 import { ServicesGemini } from '../../services/testGeminiAPI';
+import { Uploader } from '../../components/Uploader';
+import { PdfUploader } from '../../components/PdfUploader';
 
 export function Home() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [pdfText, setPdfText] = useState('');
+
 
   const handleCardClick = (template) => {
     setSelectedTemplate(template);
@@ -41,14 +45,20 @@ export function Home() {
   const [mapResult, setMapResult] = useState('')
 
   const handleGenerateMap = async () => {
-    if(!topic) return alert("Porfavor digite um tema!");
-
-    const response = await ServicesGemini(topic);
-    setMapResult(response);
-    console.log("Resposta da IA", response);
-    
-    
-  }
+    const finalPrompt = pdfText || topic;
+  
+    if (!finalPrompt) return alert("Por favor, digite um tema ou carregue um PDF!");
+  
+    try {
+      const response = await ServicesGemini(finalPrompt);
+      setMapResult(response);
+      console.log("Resposta da IA:", response);
+    } catch (error) {
+      console.error("Erro ao gerar mapa:", error);
+      alert("Erro ao gerar mapa mental. Tente novamente.");
+    }
+  };
+  
 
  
   
@@ -90,6 +100,8 @@ export function Home() {
             </ButtonContainer>
           </ContainerComponent>
         </InputSection>
+        <Uploader />
+        <PdfUploader onTextExtracted={setPdfText} />
         {mapResult && (
   <div style={{
     background: '#1e1e2f',

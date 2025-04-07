@@ -17,4 +17,3 @@ export async function ServicesGemini(prompt) {
     return "Erro ao gerar mapa mental.";
   }
 }
-
