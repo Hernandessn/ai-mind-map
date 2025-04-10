@@ -1,4 +1,3 @@
-// src/services/testGeminiAPI.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY_GEMINI);
@@ -7,9 +6,14 @@ export async function ServicesGemini(prompt) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent(
+      `Resuma o seguinte conteúdo em forma de tópicos para um mapa mental. Responda em português:
+
+"${prompt}"`
+    );
+
     const response = await result.response;
-    const text = response.text(); // Aqui você pega só o texto útil
+    const text = response.text();
 
     return text;
   } catch (error) {
