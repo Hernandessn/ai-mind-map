@@ -223,3 +223,103 @@ export const SectionCards = styled.section`
     padding: 0 15px;
   }
 `;
+export const LoadingIndicator = styled.div`
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+export const ProcessingInfo = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: white;
+  background: linear-gradient(45deg, rgba(74, 0, 224, 0.7), rgba(142, 45, 226, 0.7));
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+`;
+
+export const DebugViewerContainer = styled.div`
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  max-height: 300px;
+  overflow: auto;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+`;
+
+export const DebugHeader = styled.h4`
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+`;
+
+export const DebugContent = styled.pre`
+  white-space: pre-wrap;
+  font-size: 12px;
+  font-family: monospace;
+  color: #212529;
+  margin: 0;
+  line-height: 1.5;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+`;
+
+export const DebugControlButton = styled.button`
+  background: linear-gradient(45deg, #4a00e0, #8e2de2);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
+export const TextStats = styled.div`
+  margin: 1rem 0;
+  padding: 10px 16px;
+  background: linear-gradient(45deg, rgba(74, 0, 224, 0.1), rgba(142, 45, 226, 0.1));
+  border-radius: 8px;
+  border: 1px solid rgba(142, 45, 226, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  p {
+    font-size: 14px;
+    color: #ffff;
+    margin: 0;
+    font-weight: 500;
+  }
+`;

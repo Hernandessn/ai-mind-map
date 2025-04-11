@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min?url";
+import Tesseract from 'tesseract.js';
 import {
   ButtonGroup,
   CombinedButton,
@@ -8,6 +9,9 @@ import {
   DropdownItem,
   DropdownMenu,
   HiddenInput,
+  ProgressBar,
+  ProgressContainer,
+  ProgressText
 } from "./styles";
 import { FilePdf, Image } from "@phosphor-icons/react";
 
@@ -17,9 +21,38 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 export function FileViewer({ onFileSelect }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState("");
+  const [ocrProgress, setOcrProgress] = useState(0);
 
   const pdfInputRef = useRef(null);
   const imageInputRef = useRef(null);
+
+  const isPdfBasedOnImage = async (pdf) => {
+    try {
+      // Extraia texto da primeira página
+      const page = await pdf.getPage(1);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join('');
+      
+      // Verifique se há operadores de imagem na página
+      const operatorList = await page.getOperatorList();
+      const hasImageOperators = operatorList.fnArray.some(op => 
+        op === pdfjsLib.OPS.paintImageXObject || 
+        op === pdfjsLib.OPS.paintJpegXObject
+      );
+      
+      console.log(`Verificação de PDF baseado em imagem:
+        - Texto encontrado: ${pageText.length} caracteres
+        - Operadores de imagem encontrados: ${hasImageOperators}
+      `);
+      
+      // Se tiver pouco ou nenhum texto E tiver operadores de imagem, provavelmente é baseado em imagem
+      return pageText.length < 50 && hasImageOperators;
+    } catch (error) {
+      console.error("Erro ao verificar se o PDF é baseado em imagem:", error);
+      return false;
+    }
+  };
 
   const extractTextFromPDF = async (pdf) => {
     const totalPages = pdf.numPages;
@@ -29,6 +62,7 @@ export function FileViewer({ onFileSelect }) {
 
     for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
       try {
+        setProcessingStatus(`Extraindo texto da página ${pageNum}/${totalPages}`);
         const page = await pdf.getPage(pageNum);
         const textContent = await page.getTextContent();
         
@@ -72,6 +106,7 @@ export function FileViewer({ onFileSelect }) {
     
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       try {
+        setProcessingStatus(`Tentando método alternativo: página ${pageNum}/${pdf.numPages}`);
         const page = await pdf.getPage(pageNum);
         const textContent = await page.getTextContent();
         
@@ -89,12 +124,85 @@ export function FileViewer({ onFileSelect }) {
     return altText;
   };
 
+  const applyOCRtoPDF = async (pdf) => {
+    setProcessingStatus("Iniciando OCR nas páginas do PDF...");
+    let fullOcrText = "";
+    
+    // Verificação se Tesseract está disponível
+    if (!Tesseract) {
+      console.error("Tesseract não está disponível!");
+      setProcessingStatus("Erro: biblioteca OCR não encontrada");
+      return "";
+    }
+    
+    console.log("Tesseract disponível, iniciando OCR...");
+    
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      try {
+        setProcessingStatus(`Aplicando OCR na página ${pageNum}/${pdf.numPages}`);
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.0 }); // Escala maior para melhor qualidade OCR
+        
+        // Renderiza a página em um canvas
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        await page.render({ 
+          canvasContext: context, 
+          viewport,
+          // Otimizações para melhorar a qualidade da imagem para OCR
+          intent: 'print',
+          renderInteractiveForms: false,
+        }).promise;
+        
+        const dataUrl = canvas.toDataURL("image/png", 1.0);
+        console.log(`Página ${pageNum} renderizada em canvas com dimensões ${canvas.width}x${canvas.height}`);
+        
+        // Converte dataURL para blob
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        console.log(`Blob criado com tamanho ${blob.size} bytes`);
+        
+        // Aplica OCR na imagem gerada com configurações otimizadas
+        console.log(`Iniciando OCR para página ${pageNum}...`);
+        const result = await Tesseract.recognize(blob, 'por', {
+          logger: m => {
+            console.log(`OCR progresso:`, m);
+            if (m.status === 'recognizing text' && m.progress) {
+              setOcrProgress(Math.round(m.progress * 100));
+            }
+          },
+          // Configurações otimizadas para melhorar a detecção
+          tessedit_char_whitelist: '',  // Sem restrição de caracteres
+          tessedit_pageseg_mode: '1',   // Modo de segmentação automática
+        });
+        
+        const pageOcrText = result.data.text;
+        console.log(`OCR concluído para página ${pageNum}: ${pageOcrText.length} caracteres extraídos`);
+        console.log(`Amostra do texto: ${pageOcrText.substring(0, 50)}...`);
+        
+        fullOcrText += `\n----- PÁGINA ${pageNum} (OCR) -----\n\n${pageOcrText}\n\n`;
+        
+      } catch (error) {
+        console.error(`Erro ao aplicar OCR na página ${pageNum}:`, error);
+        setProcessingStatus(`Erro no OCR da página ${pageNum}: ${error.message}`);
+      }
+    }
+    
+    console.log(`OCR completo: ${fullOcrText.length} caracteres extraídos no total`);
+    return fullOcrText;
+  };
+
   const handlePdfChange = async (e) => {
     const file = e.target.files[0];
     if (!file || file.type !== "application/pdf") return;
 
     try {
       setIsProcessing(true);
+      setOcrProgress(0);
+      setProcessingStatus("Iniciando processamento do PDF...");
       console.log("Iniciando processamento do PDF:", file.name);
 
       const arrayBuffer = await file.arrayBuffer();
@@ -122,19 +230,44 @@ export function FileViewer({ onFileSelect }) {
       await firstPage.render({ canvasContext: context, viewport }).promise;
       const dataUrl = canvas.toDataURL();
 
+      // Verifica se o PDF é baseado em imagem
+      const isImageBased = await isPdfBasedOnImage(pdf);
+      console.log(`PDF é baseado em imagem? ${isImageBased ? 'SIM' : 'NÃO'}`);
+
       // Extrai TODO o texto do PDF
+      setProcessingStatus("Extraindo texto de todas as páginas...");
       console.log("Iniciando extração de texto de todas as páginas...");
       let extractedText = await extractTextFromPDF(pdf);
       console.log(`Extração de texto concluída. Total: ${extractedText.length} caracteres`);
 
-      // Se o texto extraído for muito pequeno, tente novamente com outro método
-      if (extractedText.length < 100 && pdf.numPages > 1) {
-        console.warn("Texto extraído é muito pequeno. Tentando método alternativo...");
+      // Se o texto extraído for muito pequeno ou o PDF for baseado em imagem, tente novamente com outro método
+      if (extractedText.length < 100 || isImageBased) {
+        console.warn("Texto extraído é muito pequeno ou PDF baseado em imagem. Tentando método alternativo...");
         const alternativeText = await extractTextAlternative(pdf);
         
         if (alternativeText.length > extractedText.length) {
           console.log(`Método alternativo obteve mais texto: ${alternativeText.length} caracteres`);
           extractedText = alternativeText;
+        }
+        
+        // Se ainda assim o texto for muito pequeno, ou se for confirmado que é baseado em imagem, aplique OCR
+        if (extractedText.length < 100 || isImageBased) {
+          console.warn("PDF parece ser baseado em imagem. Aplicando OCR...");
+          setProcessingStatus("PDF baseado em imagem detectado. Aplicando OCR...");
+          
+          try {
+            const ocrText = await applyOCRtoPDF(pdf);
+            
+            if (ocrText && ocrText.length > 0) {
+              console.log(`OCR obteve texto: ${ocrText.length} caracteres`);
+              // Se o OCR encontrou texto, substitua o texto extraído
+              extractedText = ocrText;
+            } else {
+              console.warn("OCR não retornou texto");
+            }
+          } catch (ocrError) {
+            console.error("Erro durante o OCR:", ocrError);
+          }
         }
       }
 
@@ -144,7 +277,8 @@ export function FileViewer({ onFileSelect }) {
           preview: dataUrl,
           file,
           text: extractedText, // Texto completo de todas as páginas
-          pageCount: pdf.numPages
+          pageCount: pdf.numPages,
+          isImageBased: isImageBased
         };
         
         onFileSelect(fileObject);
@@ -154,6 +288,8 @@ export function FileViewer({ onFileSelect }) {
       alert("Houve um erro ao processar o PDF. Por favor, tente novamente.");
     } finally {
       setIsProcessing(false);
+      setProcessingStatus("");
+      setOcrProgress(0);
       setIsDropdownOpen(false);
     }
   };
@@ -161,18 +297,44 @@ export function FileViewer({ onFileSelect }) {
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !file.type.startsWith("image/")) return;
-
-    const url = URL.createObjectURL(file);
-
-    if (onFileSelect) {
-      onFileSelect({
-        type: "image",
-        preview: url,
-        file,
+    
+    try {
+      setIsProcessing(true);
+      setProcessingStatus("Carregando imagem...");
+      const url = URL.createObjectURL(file);
+      
+      // Aplica OCR na imagem
+      setProcessingStatus("Aplicando OCR na imagem...");
+      console.log("Iniciando OCR na imagem:", file.name);
+      
+      const { data: { text } } = await Tesseract.recognize(file, 'por', {
+        logger: m => {
+          console.log(m);
+          if (m.status === 'recognizing text' && m.progress) {
+            setOcrProgress(Math.round(m.progress * 100));
+          }
+        }
       });
+      
+      console.log(`OCR concluído. Total: ${text.length} caracteres`);
+      
+      if (onFileSelect) {
+        onFileSelect({
+          type: "image",
+          preview: url,
+          file,
+          text: text // Texto extraído pelo OCR
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao processar imagem:", error);
+      alert("Houve um erro ao processar a imagem. Por favor, tente novamente.");
+    } finally {
+      setIsProcessing(false);
+      setProcessingStatus("");
+      setOcrProgress(0);
+      setIsDropdownOpen(false);
     }
-
-    setIsDropdownOpen(false);
   };
 
   const toggleDropdown = () => {
@@ -188,6 +350,18 @@ export function FileViewer({ onFileSelect }) {
         <span>{isProcessing ? "Processando..." : "Selecionar Arquivo"}</span>
         <Image size={24} />
       </CombinedButton>
+
+      {isProcessing && (
+        <ProgressContainer>
+          <ProgressText>{processingStatus}</ProgressText>
+          {ocrProgress > 0 && (
+            <>
+              <ProgressBar value={ocrProgress} max="100" />
+              <ProgressText>{ocrProgress}%</ProgressText>
+            </>
+          )}
+        </ProgressContainer>
+      )}
 
       <DropdownMenu $isOpen={isDropdownOpen}>
         <DropdownItem

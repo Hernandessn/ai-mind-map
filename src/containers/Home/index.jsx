@@ -17,7 +17,14 @@ import {
   InputSection,
   Main,
   SubTitle,
-  Title
+  Title,
+  LoadingIndicator,
+  ProcessingInfo,
+  DebugViewerContainer,
+  DebugHeader,
+  DebugContent,
+  DebugControlButton,
+  TextStats
 } from "./styles";
 
 import radialImage from '/src/assets/map-radial.png';
@@ -29,32 +36,17 @@ import { ServicesGemini } from '../../services/testGeminiAPI';
 import { FileViewer } from '../../components/FileViewer';
 import { FilePreview } from '../../components/FilePreview';
 
-import Tesseract from 'tesseract.js';
-
 // Componente de debug para visualizar o texto extraído
 const DebugTextViewer = ({ text, isVisible }) => {
   if (!isVisible || !text) return null;
   
   return (
-    <div style={{ 
-      margin: '1rem 0', 
-      padding: '1rem', 
-      background: '#f8f9fa', 
-      border: '1px solid #dee2e6',
-      borderRadius: '4px',
-      maxHeight: '300px',
-      overflow: 'auto'
-    }}>
-      <h4>Debug: Texto Extraído ({text.length} caracteres)</h4>
-      <pre style={{ 
-        whiteSpace: 'pre-wrap', 
-        fontSize: '12px',
-        fontFamily: 'monospace',
-        color: '#212529'
-      }}>
+    <DebugViewerContainer>
+      <DebugHeader>Debug: Texto Extraído ({text.length} caracteres)</DebugHeader>
+      <DebugContent>
         {text || "Nenhum texto extraído"}
-      </pre>
-    </div>
+      </DebugContent>
+    </DebugViewerContainer>
   );
 };
 
@@ -66,34 +58,21 @@ export function Home() {
   const [mapResult, setMapResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [processStatus, setProcessStatus] = useState('');
 
   const handleFileSelect = async (file) => {
     // Limpa o estado anterior
     setPdfText('');
     setFileData(null);
     
-    if (file.type === 'image') {
-      try {
-        setIsLoading(true);
-        const { data: { text } } = await Tesseract.recognize(file.file, 'eng', {
-          logger: m => console.log(m)
-        });
-
-        setFileData({ ...file, text });
-        setPdfText(text);
-      } catch (error) {
-        console.error("Erro ao processar imagem:", error);
-        alert("Erro ao extrair texto da imagem. Tente novamente.");
-      } finally {
-        setIsLoading(false);
-      }
-    } else if (file.type === 'pdf' && file.text) {
-      // Tratamento específico para PDFs
-      console.log("Texto extraído do PDF:", file.text.substring(0, 100) + "...");
-      console.log("Tamanho total do texto:", file.text.length, "caracteres");
-      
+    if (file.text) {
+      // Se o texto já foi extraído (pelo componente FileViewer atualizado)
       setFileData(file);
-      setPdfText(file.text); // Garante que o texto completo é salvo
+      setPdfText(file.text);
+      console.log(`Texto extraído recebido: ${file.text.length} caracteres`);
+    } else if (file.type === 'image' || file.type === 'pdf') {
+      // Caso antigo (se ainda necessário como fallback)
+      setFileData(file);
     }
   };
 
@@ -104,6 +83,7 @@ export function Home() {
 
   const handleGenerateMap = async () => {
     setIsLoading(true);
+    setProcessStatus('Preparando conteúdo para processamento...');
     
     // Verifica qual conteúdo usar: texto do PDF ou tópico digitado
     const finalPrompt = pdfText || topic;
@@ -122,13 +102,33 @@ export function Home() {
         ? finalPrompt.substring(0, maxLength) + "..." 
         : finalPrompt;
       
+      setProcessStatus('Enviando para o Gemini...');
       console.log(`Prompt final enviado para a API: ${trimmedPrompt.length} caracteres`);
-      const response = await ServicesGemini(trimmedPrompt);
+      
+      // Adicionando instruções mais específicas para formatar o mapa mental
+      const enhancedPrompt = `
+      Crie um mapa mental organizado baseado no seguinte conteúdo: 
+      
+      ${trimmedPrompt}
+      
+      O mapa mental deve:
+      1. Identificar o tema principal
+      2. Organizar os tópicos em uma estrutura hierárquica clara
+      3. Usar formato que facilite a leitura e compreensão
+      4. Destacar conceitos-chave e suas relações
+      5. Servir como um resumo visual do conteúdo
+      
+      Use marcadores e indentação para mostrar a estrutura do mapa mental.
+      `;
+      
+      const response = await ServicesGemini(enhancedPrompt);
       setMapResult(response);
+      setProcessStatus('');
       console.log("Resposta da IA recebida com sucesso");
     } catch (error) {
       console.error("Erro ao gerar mapa:", error);
       alert("Erro ao gerar mapa mental. Tente novamente.");
+      setProcessStatus('');
     } finally {
       setIsLoading(false);
     }
@@ -169,30 +169,27 @@ export function Home() {
                 {isLoading ? 'Processando...' : 'Gerar Mapa Mental'}
               </DefaultButton>
             </ButtonContainer>
+            
+            {isLoading && processStatus && (
+              <ProcessingInfo>
+                <LoadingIndicator />
+                <span>{processStatus}</span>
+              </ProcessingInfo>
+            )}
           </ContainerComponent>
         </InputSection>
 
         {fileData && <FilePreview fileData={fileData} />}
 
         {pdfText && (
-          <div style={{ margin: '1rem 0', padding: '0.5rem', background: '#f1f1f1', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <p style={{ fontSize: '14px', color: '#333', margin: 0 }}>
+          <TextStats>
+            <p>
               {`Texto extraído: ${pdfText.length} caracteres`}
             </p>
-            <button 
-              onClick={() => setShowDebug(!showDebug)}
-              style={{
-                background: 'transparent',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                padding: '4px 8px',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
-            >
+            <DebugControlButton onClick={() => setShowDebug(!showDebug)}>
               {showDebug ? 'Ocultar Texto' : 'Mostrar Texto'}
-            </button>
-          </div>
+            </DebugControlButton>
+          </TextStats>
         )}
 
         <DebugTextViewer text={pdfText} isVisible={showDebug} />
