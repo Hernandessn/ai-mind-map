@@ -30,7 +30,6 @@ import {
 import radialImage from '/src/assets/map-radial.png';
 import linearImage from '/src/assets/map-linear.png';
 import hierarquicoImage from '/src/assets/map-hierarquico.png';
-import gradeImage from '/src/assets/map-grade.png';
 
 import { ServicesGemini } from '../../services/testGeminiAPI';
 import { FileViewer } from '../../components/FileViewer';
@@ -229,14 +228,6 @@ export function Home() {
             onClick={() => handleCardClick("linear")}
           />
 
-          <TemplateCards
-            img={gradeImage}
-            name="Grade"
-            Description="Perfeito para comparações, matrizes de decisão ou organização de conceitos em categorias bem definidas."
-            dataTemplate="grade"
-            isSelected={selectedTemplate === "grade"}
-            onClick={() => handleCardClick("grade")}
-          />
         </SectionCards>
 
         <MapSection />

@@ -161,6 +161,24 @@ export function TestPage() {
         description: "Resumo e encerramento da linha de raciocínio."
       }
     ];
+    const mockGrade = [
+      {
+        title: 'Frontend',
+        subtopics: ['React', 'CSS', 'JavaScript'],
+      },
+      {
+        title: 'Backend',
+        subtopics: ['Node.js', 'Express', 'MongoDB'],
+      },
+      {
+        title: 'DevOps',
+        subtopics: ['Docker', 'CI/CD', 'AWS'],
+      },
+      {
+        title: 'UI/UX',
+        subtopics: ['Figma', 'Prototypagem', 'Testes'],
+      },
+    ];
     
   return (
     <Div>
