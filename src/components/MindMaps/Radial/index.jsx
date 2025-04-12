@@ -10,7 +10,7 @@ import {
   MainWrapper,
 } from './styles';
 
-const RadialMindMap = ({ data }) => {
+const Radial = ({ data }) => {
   // Definição dos tópicos
   const topics = [
     {
@@ -116,4 +116,4 @@ const RadialMindMap = ({ data }) => {
   );
 };
 
-export default RadialMindMap;
+export default Radial;
