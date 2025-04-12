@@ -39,9 +39,7 @@ export function TestPage() {
   
   return (
     <div>
-    <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>
-      Mapa Mental - Radial
-    </h1>
+   
     <RadialMindMap data={mockRadial} />
   </div>
 );
