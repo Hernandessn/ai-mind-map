@@ -62,7 +62,6 @@ export function Home() {
   const [parsedMapData, setParsedMapData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
-  const [processStatus, setProcessStatus] = useState('');
   const [jsonError, setJsonError] = useState('');
 
   const handleFileSelect = async (file) => {
@@ -135,8 +134,7 @@ export function Home() {
     setIsLoading(true);
     setParsedMapData(null);
     setJsonError('');
-    setProcessStatus('Preparando conteúdo para processamento...');
-
+   
     // Verifica qual conteúdo usar: texto do PDF ou tópico digitado
     const finalPrompt = pdfText || topic;
 
@@ -159,7 +157,7 @@ export function Home() {
         ? finalPrompt.substring(0, maxLength) + "..."
         : finalPrompt;
 
-      setProcessStatus('Enviando para o Gemini...');
+      
       console.log(`Prompt final enviado para a API: ${trimmedPrompt.length} caracteres`);
 
       // Adicionando instruções mais específicas para formatar o mapa mental
@@ -235,11 +233,11 @@ export function Home() {
       ⚠️ Retorne apenas o JSON **válido e bem formatado** conforme o modelo escolhido, sem texto extra.
       `;
       
-      setProcessStatus('Aguardando resposta do Gemini...');
+     
       const response = await ServicesGemini(enhancedPrompt);
       setMapResult(response);
       
-      setProcessStatus('Processando resposta...');
+      
       
       // Tentar extrair e analisar o JSON da resposta
       const jsonData = extractJsonFromString(response);
@@ -261,11 +259,11 @@ export function Home() {
         setJsonError('Não foi possível processar o resultado como JSON válido. Tente novamente ou ajuste o conteúdo.');
       }
       
-      setProcessStatus('');
+      
     } catch (error) {
       console.error("Erro ao gerar mapa:", error);
       alert("Erro ao gerar mapa mental. Tente novamente.");
-      setProcessStatus('');
+      
       setJsonError('Ocorreu um erro durante a geração do mapa mental. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -308,12 +306,7 @@ export function Home() {
               </DefaultButton>
             </ButtonContainer>
 
-            {isLoading && processStatus && (
-              <ProcessingInfo>
-                <LoadingIndicator />
-                <span>{processStatus}</span>
-              </ProcessingInfo>
-            )}
+         
           </ContainerComponent>
         </InputSection>
 
