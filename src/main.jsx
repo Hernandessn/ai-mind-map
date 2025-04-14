@@ -1,12 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import GlobalStyles from './styles/globalStyles';
-import { RouterProvider } from 'react-router-dom';
-import { router } from './routes/routes';
+import { AppRoutes } from './routes/routes'; // << muda isso aqui!
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppRoutes /> {/* << muda isso aqui também */}
     <GlobalStyles />
   </StrictMode>,
-)
+);

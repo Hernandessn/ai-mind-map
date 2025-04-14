@@ -7,7 +7,7 @@ export const Container = styled.div`
   justify-content: center;
   align-items: center;
   height: 130vh;
-  background-color: #f9f9f9;
+  background-color: #0000;
   padding: 20px;
   font-family: 'Roboto', sans-serif;
 `;

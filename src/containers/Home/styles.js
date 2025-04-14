@@ -323,3 +323,36 @@ export const TextStats = styled.div`
     font-weight: 500;
   }
 `;
+
+// Adicione estas definições de estilo ao seu arquivo styles.js
+
+// MapResultContainer - Container para o mapa mental renderizado
+export const MapResultContainer = styled.div`
+  width: 100%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: rgba(10, 10, 30, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  
+  h2 {
+    color: ${theme.colors.white};
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.8rem;
+  }
+`;
+
+// ErrorMessage - Exibe mensagens de erro
+export const ErrorMessage = styled.div`
+  width: 100%;
+  padding: 1rem;
+  margin: 1rem 0;
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.5);
+  color: #ff6b6b;
+  border-radius: 8px;
+  font-size: 0.9rem;
+`;
