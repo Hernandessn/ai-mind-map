@@ -28,17 +28,18 @@ const Radial = ({ data, forceDesktopLayout = false }) => {
         const subtopics = topic.subtopics || [];
         const contentSize = subtopics.join('').length + (topic.title?.length || 0);
         
-        const baseWidth = Math.min(320, Math.max(180, 150 + contentSize * 0.3));
-        const baseHeight = 80 + (subtopics.length * 18);
+        const baseWidth = Math.min(350, Math.max(200, 180 + contentSize * 0.4));
+        const baseHeight = 100 + (subtopics.length * 22);
         
         return {
           width: baseWidth,
-          height: baseHeight
+          height: baseHeight,
+          margin: 25 // Margem horizontal aumentada
         };
       });
 
       const totalNodes = topics.length;
-      let baseRadius = 200 + (totalNodes * 20);
+      let baseRadius = 280 + (totalNodes * 30);
       
       const center = { x: 0, y: 0 };
       const positions = topics.map((_, index) => {
@@ -50,8 +51,9 @@ const Radial = ({ data, forceDesktopLayout = false }) => {
         }
         
         const quadrant = Math.floor(angle / 90) % 4;
-        const xScale = [1.1, 1.3, 1.1, 0.9][quadrant];
-        const yScale = [0.9, 1.1, 1.3, 1.1][quadrant];
+        // Fatores de escala aumentados para mais espaçamento horizontal
+        const xScale = [1.5, 1.7, 1.5, 1.3][quadrant];
+        const yScale = [1.1, 1.3, 1.5, 1.3][quadrant];
         
         const radians = (angle * Math.PI) / 180;
         return {
@@ -63,26 +65,25 @@ const Radial = ({ data, forceDesktopLayout = false }) => {
 
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
       
-      minX = Math.min(minX, center.x - 50);
-      maxX = Math.max(maxX, center.x + 50);
-      minY = Math.min(minY, center.y - 50);
-      maxY = Math.max(maxY, center.y + 50);
+      minX = Math.min(minX, center.x - 60);
+      maxX = Math.max(maxX, center.x + 60);
+      minY = Math.min(minY, center.y - 60);
+      maxY = Math.max(maxY, center.y + 60);
       
       positions.forEach((pos, index) => {
         const nodeWidth = nodesConfig[index].width;
         const nodeHeight = nodesConfig[index].height;
         
-        minX = Math.min(minX, pos.x - nodeWidth/2);
-        maxX = Math.max(maxX, pos.x + nodeWidth/2);
+        minX = Math.min(minX, pos.x - nodeWidth/2 - 30); // Margem extra
+        maxX = Math.max(maxX, pos.x + nodeWidth/2 + 30);
         minY = Math.min(minY, pos.y - nodeHeight/2);
         maxY = Math.max(maxY, pos.y + nodeHeight/2);
       });
 
-      const padding = 40;
+      const padding = 80;
       const containerWidth = Math.ceil(maxX - minX + padding * 2);
       const containerHeight = Math.ceil(maxY - minY + padding * 2);
       
-      // Centralização perfeita
       const offsetX = (containerWidth - (maxX - minX)) / 2 - minX;
       const offsetY = (containerHeight - (maxY - minY)) / 2 - minY;
 
@@ -189,6 +190,7 @@ const Radial = ({ data, forceDesktopLayout = false }) => {
                   top: `${pos.y}px`,
                   width: `${nodeConfig.width}px`,
                   minHeight: `${nodeConfig.height}px`,
+                  margin: nodeConfig.margin,
                   transform: 'translate(-50%, -50%)'
                 }}
               >
