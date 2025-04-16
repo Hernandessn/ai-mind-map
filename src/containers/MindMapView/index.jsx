@@ -1,6 +1,7 @@
-// src/pages/MindMapView/index.jsx
-import React from 'react';
+// MindMapView.jsx - Função de exportação aprimorada
+import React, { useRef, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toPng } from 'html-to-image';
 import Radial from '../../components/MindMaps/Radial';
 import Hierarchical from '../../components/MindMaps/Hierarquico';
 import Linear from '../../components/MindMaps/Linear';
@@ -15,47 +16,200 @@ import {
   Title,
   MapContainer,
   ButtonsContainer,
-  NoDataMessage
+  NoDataMessage,
+  LoadingOverlay
 } from './styles';
 
 export function MindMapView() {
   const location = useLocation();
   const navigate = useNavigate();
   const { mapData, templateType } = location.state || {};
-
-  // Função para voltar à página inicial
+  const mapRef = useRef(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  
+  // Pre-render desktop view for PNG export (hidden by default)
+  const desktopMapRef = useRef(null);
+  
+  // Garantir que a referência para o mapa desktop esteja pronta antes de exportar
+  useEffect(() => {
+    // Pré-renderizar o mapa desktop para exportação
+    if (desktopMapRef.current && mapData) {
+      // Forçar renderização inicial
+      desktopMapRef.current.style.visibility = 'hidden';
+      desktopMapRef.current.style.position = 'absolute';
+      desktopMapRef.current.style.left = '-9999px';
+    }
+  }, [mapData]);
+  
+  // Function to go back to home page
   const handleBackToHome = () => {
     navigate('/home');
   };
 
-  // Função para baixar o mapa como JSON
+  // Function to download the map as JSON
   const handleDownloadJSON = () => {
     if (!mapData) return;
     
-    const dataStr = JSON.stringify(mapData, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.download = `mindmap-${templateType}-${new Date().toISOString().slice(0, 10)}.json`;
-    a.href = url;
-    a.click();
-    
-    URL.revokeObjectURL(url);
+    try {
+      // Create a Blob with the JSON data
+      const jsonBlob = new Blob([JSON.stringify(mapData, null, 2)], { type: 'application/json' });
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.download = `mindmap-${templateType}-${new Date().toISOString().slice(0, 10)}.json`;
+      link.href = URL.createObjectURL(jsonBlob);
+      link.click();
+      
+      // Clean up
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Erro ao gerar JSON:', error);
+      alert('Falha ao gerar JSON. Por favor, tente novamente.');
+    }
   };
 
-  // Renderizar o mapa mental adequado com base no template
-  const renderMindMap = () => {
+  // Função melhorada para download do mapa como PNG com melhor qualidade e sem sobreposições
+  const handleDownloadPNG = async () => {
+    if (!desktopMapRef.current) return;
+    
+    try {
+      setIsExporting(true);
+      setExportProgress(10);
+      
+      // Sempre usar o mapa desktop para exportação
+      const elementToCapture = desktopMapRef.current;
+      
+      if (!elementToCapture) {
+        throw new Error("Não foi possível encontrar o elemento para captura");
+      }
+      
+      // Armazenar estilos originais
+      const originalStyles = {
+        backgroundColor: elementToCapture.style.backgroundColor,
+        padding: elementToCapture.style.padding,
+        transform: elementToCapture.style.transform,
+        width: elementToCapture.style.width,
+        height: elementToCapture.style.height,
+        overflow: elementToCapture.style.overflow,
+        visibility: elementToCapture.style.visibility,
+        position: elementToCapture.style.position,
+        zIndex: elementToCapture.style.zIndex
+      };
+      
+      // Definir estilos para captura
+      elementToCapture.style.backgroundColor = '#0a0a1e';
+      elementToCapture.style.padding = '40px';
+      elementToCapture.style.transform = 'scale(1)';
+      elementToCapture.style.overflow = 'visible';
+      elementToCapture.style.visibility = 'visible';
+      elementToCapture.style.position = 'fixed';
+      elementToCapture.style.top = '0';
+      elementToCapture.style.left = '0';
+      elementToCapture.style.zIndex = '9999';
+      
+      // Pré-processamento para garantir que todos os nós estejam visíveis
+      const expandableElements = elementToCapture.querySelectorAll('[data-expandable="true"]');
+      const originalNodeStyles = [];
+      
+      expandableElements.forEach((el, index) => {
+        // Salvar estilos originais
+        originalNodeStyles[index] = {
+          maxHeight: el.style.maxHeight,
+          overflow: el.style.overflow,
+          maxWidth: el.style.maxWidth
+        };
+        
+        // Aplicar estilos para exportação
+        el.style.maxHeight = 'none';
+        el.style.overflow = 'visible';
+        el.style.maxWidth = 'none';
+      });
+      
+      setExportProgress(30);
+      
+      // Aguardar tempo suficiente para que todos os elementos sejam renderizados corretamente
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setExportProgress(50);
+      
+      // Gerar PNG com alta qualidade
+      const dataUrl = await toPng(elementToCapture, {
+        quality: 0.98,
+        backgroundColor: '#0a0a1e',
+        width: elementToCapture.scrollWidth,
+        height: elementToCapture.scrollHeight,
+        canvasWidth: elementToCapture.scrollWidth * 2,
+        canvasHeight: elementToCapture.scrollHeight * 2,
+        pixelRatio: 2.5,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+        },
+        filter: (node) => {
+          // Filtrar controles de UI da imagem
+          return !node.classList?.contains('zoom-controls');
+        }
+      });
+      
+      setExportProgress(80);
+      
+      // Criar link de download
+      const link = document.createElement('a');
+      link.download = `mindmap-${templateType}-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = dataUrl;
+      link.click();
+      
+      setExportProgress(100);
+      
+      // Restaurar estilos originais
+      setTimeout(() => {
+        // Restaurar estilos do elemento principal
+        elementToCapture.style.backgroundColor = originalStyles.backgroundColor;
+        elementToCapture.style.padding = originalStyles.padding;
+        elementToCapture.style.transform = originalStyles.transform;
+        elementToCapture.style.width = originalStyles.width;
+        elementToCapture.style.height = originalStyles.height;
+        elementToCapture.style.overflow = originalStyles.overflow;
+        elementToCapture.style.visibility = originalStyles.visibility;
+        elementToCapture.style.position = originalStyles.position;
+        elementToCapture.style.top = '';
+        elementToCapture.style.left = '';
+        elementToCapture.style.zIndex = originalStyles.zIndex;
+        
+        // Restaurar estilos originais dos nós
+        expandableElements.forEach((el, index) => {
+          if (originalNodeStyles[index]) {
+            el.style.maxHeight = originalNodeStyles[index].maxHeight;
+            el.style.overflow = originalNodeStyles[index].overflow;
+            el.style.maxWidth = originalNodeStyles[index].maxWidth;
+          }
+        });
+        
+        setIsExporting(false);
+        setExportProgress(0);
+      }, 500);
+      
+    } catch (error) {
+      console.error('Erro ao gerar PNG:', error);
+      alert('Falha ao gerar PNG. Por favor, tente novamente.');
+      setIsExporting(false);
+      setExportProgress(0);
+    }
+  };
+
+  // Renderizar o mapa mental apropriado com base no template
+  const renderMindMap = (forceDesktopLayout = false) => {
     if (!mapData || !templateType) return null;
 
     try {
       switch (templateType) {
         case "radial":
-          return <Radial data={mapData} />;
+          return <Radial data={mapData} forceDesktopLayout={forceDesktopLayout} />;
         case "hierarquico":
-          return <Hierarchical data={mapData} />;
+          return <Hierarchical data={mapData} forceDesktopLayout={forceDesktopLayout} />;
         case "linear":
-          return <Linear data={mapData} />;
+          return <Linear data={mapData} forceDesktopLayout={forceDesktopLayout} />;
         default:
           return <NoDataMessage>Tipo de mapa não reconhecido</NoDataMessage>;
       }
@@ -65,7 +219,7 @@ export function MindMapView() {
     }
   };
 
-  // Se não houver dados, exibir mensagem
+  // Se não houver dados, mostrar mensagem
   if (!mapData || !templateType) {
     return (
       <Container>
@@ -97,9 +251,26 @@ export function MindMapView() {
         <Title>Seu Mapa Mental</Title>
       </Header>
       
-      <MapContainer>
-        {renderMindMap()}
+      {/* Mapa visível principal */}
+      <MapContainer ref={mapRef}>
+        {renderMindMap(false)}
       </MapContainer>
+      
+      {/* Mapa desktop oculto para exportação PNG */}
+      <div 
+        ref={desktopMapRef} 
+        style={{ 
+          position: 'absolute', 
+          left: '-9999px', 
+          width: '1200px',
+          height: '900px',
+          visibility: 'hidden',
+          overflow: 'visible'
+        }}
+        className="desktop-layout"
+      >
+        {renderMindMap(true)}
+      </div>
       
       <ButtonsContainer>
         <DefaultButton
@@ -112,13 +283,28 @@ export function MindMapView() {
         <DefaultButton
           onClick={handleDownloadJSON}
           $borderColor={false}
-          $gradient
-          $colorStart={theme.colors.neonBlue}
-          $colorEnd={theme.colors.neonPurple}
         >
           Baixar JSON do Mapa
         </DefaultButton>
+        
+        <DefaultButton
+          onClick={handleDownloadPNG}
+          $borderColor={false}
+          $gradient
+          $colorStart={theme.colors.neonBlue}
+          $colorEnd={theme.colors.neonPurple}
+          disabled={isExporting}
+        >
+          {isExporting ? `Exportando... ${exportProgress}%` : 'Baixar como PNG'}
+        </DefaultButton>
       </ButtonsContainer>
+      
+      {isExporting && (
+        <LoadingOverlay>
+          <div className="spinner"></div>
+          <div className="progress">Gerando imagem... {exportProgress}%</div>
+        </LoadingOverlay>
+      )}
       
       <Footer />
     </Container>

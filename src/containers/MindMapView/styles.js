@@ -1,30 +1,34 @@
-// src/pages/MindMapView/styles.js
-import styled from 'styled-components';
-import { theme } from '../../styles/theme';
+import styled, { keyframes } from 'styled-components';
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
 
 export const Container = styled.div`
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: ${theme.colors.darkBg};
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #0a0a1e;
+  color: #ffffff;
+  position: relative;
 `;
 
 export const Header = styled.header`
-  padding: 2rem 1rem;
-  background: linear-gradient(180deg, rgba(6, 6, 20, 0.8) 0%, rgba(6, 6, 20, 0.6) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 20px;
   text-align: center;
 `;
 
 export const Title = styled.h1`
   font-size: 2.5rem;
-  color: ${theme.colors.white};
-  margin: 0;
-  background: linear-gradient(90deg, ${theme.colors.neonBlue}, ${theme.colors.neonPurple});
+  margin: 10px 0;
+  background: linear-gradient(90deg, #4ecdc4, #556270);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-weight: 700;
-
+  background-clip: text;
+  text-fill-color: transparent;
+  
   @media (max-width: 768px) {
     font-size: 1.8rem;
   }
@@ -32,45 +36,72 @@ export const Title = styled.h1`
 
 export const MapContainer = styled.div`
   flex: 1;
-  padding: 2rem;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-  background: rgba(10, 10, 30, 0.5);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  min-height: 500px;
-  
-  @media (max-width: 768px) {
-    padding: 1rem;
-    min-height: 400px;
-  }
+  min-height: 70vh;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
 `;
 
 export const ButtonsContainer = styled.div`
   display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 0 1rem;
   
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: center;
+    gap: 10px;
   }
 `;
 
 export const NoDataMessage = styled.div`
-  text-align: center;
-  color: ${theme.colors.lightGray};
-  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
   font-size: 1.2rem;
-  margin: 3rem auto;
-  max-width: 600px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  color: #aaa;
+  padding: 20px;
+`;
+
+export const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 10, 30, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  
+  .spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(76, 205, 196, 0.2);
+    border-radius: 50%;
+    border-top-color: #4ecdc4;
+    animation: ${spin} 1.5s linear infinite;
+    margin-bottom: 20px;
+  }
+  
+  .progress {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(90deg, #4ecdc4, #556270);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+  }
 `;

@@ -62,6 +62,8 @@ export function Home() {
   const [parsedMapData, setParsedMapData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+
+  
   
   const [jsonError, setJsonError] = useState('');
 

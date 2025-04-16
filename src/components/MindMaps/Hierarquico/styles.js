@@ -1,14 +1,15 @@
-// styles.js - versão responsiva
+// styles.js - versão responsiva com componentes de zoom adicionados
 import styled from "styled-components";
 
 export const Container = styled.div`
   padding: 20px;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   font-family: 'Poppins', sans-serif;
   width: 100%;
   overflow-x: auto;
+  position: relative;
   
   @media (max-width: 1200px) {
     padding: 10px;
@@ -20,6 +21,7 @@ export const OrgChart = styled.div`
   flex-direction: column;
   align-items: center;
   max-width: 100%;
+  transition: transform 0.3s ease;
 `;
 
 export const NodeContainer = styled.div`
@@ -67,6 +69,11 @@ export const NodeContent = styled.div`
       case 'cpo':
         return `
           background-color: #A67B5B;
+          color: white;
+        `;
+      case 'ceo':
+        return `
+          background-color: #9C27B0;
           color: white;
         `;
       case 'marketing':
@@ -178,8 +185,41 @@ export const ConnectorsWrapper = styled.div`
 export const ResponsiveOrgChart = styled.div`
   width: 100%;
   overflow-x: auto;
+  margin-top: 20px;
   
   @media (min-width: 1400px) {
     overflow-x: visible;
+  }
+`;
+
+// Adicionando os componentes de controle de zoom que estavam faltando
+export const ZoomControls = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+`;
+
+export const ZoomButton = styled.button`
+  padding: 5px 10px;
+  background-color: #0a0a1e;
+  color: white;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #222244;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.5);
   }
 `;
