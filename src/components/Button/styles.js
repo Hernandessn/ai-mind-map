@@ -1,5 +1,6 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { theme } from '../../styles/theme';
+
 export const Button = styled.button`
   padding: 12px 30px;
   font-size: 16px;
@@ -22,4 +23,17 @@ export const Button = styled.button`
     border-color: ${(props)=> props.$borderColor === true ? theme.colors.neonBlue : '0px'};
     box-shadow: 0 0 20px rgba(0, 243, 255, 0.8);
   }
+`;
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+export const LoadingSpinner = styled.div`
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: ${spin} 1s linear infinite;
 `;

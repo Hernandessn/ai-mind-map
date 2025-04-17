@@ -27,10 +27,14 @@ export function MindMapView() {
   const mapRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [isPNGExporting, setIsPNGExporting] = useState(false);
   
+  // Novo estado para controlar se o mapa está pronto para ser exibido
+  const [isMapReady, setIsMapReady] = useState(false);
+
   // Pre-render desktop view for PNG export (hidden by default)
   const desktopMapRef = useRef(null);
-  
+
   // Garantir que a referência para o mapa desktop esteja pronta antes de exportar
   useEffect(() => {
     // Pré-renderizar o mapa desktop para exportação
@@ -41,7 +45,7 @@ export function MindMapView() {
       desktopMapRef.current.style.left = '-9999px';
     }
   }, [mapData]);
-  
+
   // Function to go back to home page
   const handleBackToHome = () => {
     navigate('/home');
@@ -50,17 +54,17 @@ export function MindMapView() {
   // Function to download the map as JSON
   const handleDownloadJSON = () => {
     if (!mapData) return;
-    
+
     try {
       // Create a Blob with the JSON data
       const jsonBlob = new Blob([JSON.stringify(mapData, null, 2)], { type: 'application/json' });
-      
+
       // Create download link
       const link = document.createElement('a');
       link.download = `mindmap-${templateType}-${new Date().toISOString().slice(0, 10)}.json`;
       link.href = URL.createObjectURL(jsonBlob);
       link.click();
-      
+
       // Clean up
       URL.revokeObjectURL(link.href);
     } catch (error) {
@@ -69,13 +73,18 @@ export function MindMapView() {
     }
   };
 
-  // Função melhorada para download do mapa como PNG com melhor qualidade e sem sobreposições
+  // Função com tempos de carregamento ajustados
   const handleDownloadPNG = async () => {
     if (!desktopMapRef.current) return;
     
     try {
+      // Ativar estados de carregamento ANTES de qualquer operação
+      setIsPNGExporting(true);
       setIsExporting(true);
       setExportProgress(10);
+      
+      // Aumentar o tempo inicial para visualizar melhor o loading
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       // Sempre usar o mapa desktop para exportação
       const elementToCapture = desktopMapRef.current;
@@ -96,6 +105,10 @@ export function MindMapView() {
         position: elementToCapture.style.position,
         zIndex: elementToCapture.style.zIndex
       };
+      
+      // Adicionar um pequeno delay para o progresso
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setExportProgress(20);
       
       // Definir estilos para captura
       elementToCapture.style.backgroundColor = '#0a0a1e';
@@ -126,10 +139,12 @@ export function MindMapView() {
         el.style.maxWidth = 'none';
       });
       
+      // Adicionar um delay antes de atualizar o progresso
+      await new Promise(resolve => setTimeout(resolve, 800));
       setExportProgress(30);
       
-      // Aguardar tempo suficiente para que todos os elementos sejam renderizados corretamente
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Aguardar tempo suficiente para que todos os elementos sejam renderizados
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setExportProgress(50);
       
@@ -149,9 +164,15 @@ export function MindMapView() {
         filter: (node) => {
           // Filtrar controles de UI da imagem
           return !node.classList?.contains('zoom-controls');
+        },
+        skipFonts: true,
+        fetchOptions: {
+          mode: 'no-cors'
         }
       });
       
+      // Adicionar um delay antes de atualizar o progresso
+      await new Promise(resolve => setTimeout(resolve, 800));
       setExportProgress(80);
       
       // Criar link de download
@@ -160,42 +181,55 @@ export function MindMapView() {
       link.href = dataUrl;
       link.click();
       
+      // Adicionar um delay após concluir a exportação
+      await new Promise(resolve => setTimeout(resolve, 800));
       setExportProgress(100);
       
+      // Delay final para mostrar 100% antes de ocultar
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Restaurar estilos originais
-      setTimeout(() => {
-        // Restaurar estilos do elemento principal
-        elementToCapture.style.backgroundColor = originalStyles.backgroundColor;
-        elementToCapture.style.padding = originalStyles.padding;
-        elementToCapture.style.transform = originalStyles.transform;
-        elementToCapture.style.width = originalStyles.width;
-        elementToCapture.style.height = originalStyles.height;
-        elementToCapture.style.overflow = originalStyles.overflow;
-        elementToCapture.style.visibility = originalStyles.visibility;
-        elementToCapture.style.position = originalStyles.position;
-        elementToCapture.style.top = '';
-        elementToCapture.style.left = '';
-        elementToCapture.style.zIndex = originalStyles.zIndex;
-        
-        // Restaurar estilos originais dos nós
-        expandableElements.forEach((el, index) => {
-          if (originalNodeStyles[index]) {
-            el.style.maxHeight = originalNodeStyles[index].maxHeight;
-            el.style.overflow = originalNodeStyles[index].overflow;
-            el.style.maxWidth = originalNodeStyles[index].maxWidth;
-          }
-        });
-        
-        setIsExporting(false);
-        setExportProgress(0);
-      }, 500);
+      // Restaurar estilos do elemento principal
+      elementToCapture.style.backgroundColor = originalStyles.backgroundColor;
+      elementToCapture.style.padding = originalStyles.padding;
+      elementToCapture.style.transform = originalStyles.transform;
+      elementToCapture.style.width = originalStyles.width;
+      elementToCapture.style.height = originalStyles.height;
+      elementToCapture.style.overflow = originalStyles.overflow;
+      elementToCapture.style.visibility = originalStyles.visibility;
+      elementToCapture.style.position = originalStyles.position;
+      elementToCapture.style.top = '';
+      elementToCapture.style.left = '';
+      elementToCapture.style.zIndex = originalStyles.zIndex;
+      
+      // Restaurar estilos originais dos nós
+      expandableElements.forEach((el, index) => {
+        if (originalNodeStyles[index]) {
+          el.style.maxHeight = originalNodeStyles[index].maxHeight;
+          el.style.overflow = originalNodeStyles[index].overflow;
+          el.style.maxWidth = originalNodeStyles[index].maxWidth;
+        }
+      });
+      
+      // Resetar todos os estados de carregamento
+      setIsExporting(false);
+      setExportProgress(0);
+      setIsPNGExporting(false);
       
     } catch (error) {
       console.error('Erro ao gerar PNG:', error);
       alert('Falha ao gerar PNG. Por favor, tente novamente.');
+      
+      // Certifique-se de resetar todos os estados mesmo em erro
       setIsExporting(false);
       setExportProgress(0);
+      setIsPNGExporting(false);
     }
+  };
+
+  // Método para sinalizar quando o mapa está pronto para exibição
+  const handleMapReady = () => {
+    setIsMapReady(true);
   };
 
   // Renderizar o mapa mental apropriado com base no template
@@ -205,11 +239,23 @@ export function MindMapView() {
     try {
       switch (templateType) {
         case "radial":
-          return <Radial data={mapData} forceDesktopLayout={forceDesktopLayout} />;
+          return <Radial 
+                   data={mapData} 
+                   forceDesktopLayout={forceDesktopLayout}
+                   onMapReady={!forceDesktopLayout ? handleMapReady : undefined} 
+                 />;
         case "hierarquico":
-          return <Hierarchical data={mapData} forceDesktopLayout={forceDesktopLayout} />;
+          return <Hierarchical 
+                   data={mapData} 
+                   forceDesktopLayout={forceDesktopLayout}
+                   onMapReady={!forceDesktopLayout ? handleMapReady : undefined} 
+                 />;
         case "linear":
-          return <Linear data={mapData} forceDesktopLayout={forceDesktopLayout} />;
+          return <Linear 
+                   data={mapData} 
+                   forceDesktopLayout={forceDesktopLayout}
+                   onMapReady={!forceDesktopLayout ? handleMapReady : undefined} 
+                 />;
         default:
           return <NoDataMessage>Tipo de mapa não reconhecido</NoDataMessage>;
       }
@@ -250,18 +296,18 @@ export function MindMapView() {
       <Header>
         <Title>Seu Mapa Mental</Title>
       </Header>
-      
+
       {/* Mapa visível principal */}
       <MapContainer ref={mapRef}>
         {renderMindMap(false)}
       </MapContainer>
-      
+
       {/* Mapa desktop oculto para exportação PNG */}
-      <div 
-        ref={desktopMapRef} 
-        style={{ 
-          position: 'absolute', 
-          left: '-9999px', 
+      <div
+        ref={desktopMapRef}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
           width: '1200px',
           height: '900px',
           visibility: 'hidden',
@@ -271,7 +317,7 @@ export function MindMapView() {
       >
         {renderMindMap(true)}
       </div>
-      
+
       <ButtonsContainer>
         <DefaultButton
           onClick={handleBackToHome}
@@ -279,33 +325,34 @@ export function MindMapView() {
         >
           Voltar para a Página Inicial
         </DefaultButton>
-        
+
         <DefaultButton
           onClick={handleDownloadJSON}
           $borderColor={false}
         >
           Baixar JSON do Mapa
         </DefaultButton>
-        
+
         <DefaultButton
+          loading={isPNGExporting}
           onClick={handleDownloadPNG}
           $borderColor={false}
           $gradient
           $colorStart={theme.colors.neonBlue}
           $colorEnd={theme.colors.neonPurple}
-          disabled={isExporting}
+          disabled={isExporting || isPNGExporting || !isMapReady} // Adicionado !isMapReady
         >
           {isExporting ? `Exportando... ${exportProgress}%` : 'Baixar como PNG'}
         </DefaultButton>
       </ButtonsContainer>
-      
+     
       {isExporting && (
         <LoadingOverlay>
           <div className="spinner"></div>
           <div className="progress">Gerando imagem... {exportProgress}%</div>
         </LoadingOverlay>
       )}
-      
+
       <Footer />
     </Container>
   );
