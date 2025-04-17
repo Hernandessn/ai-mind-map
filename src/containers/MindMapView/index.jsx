@@ -28,23 +28,62 @@ export function MindMapView() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [isPNGExporting, setIsPNGExporting] = useState(false);
+  const [downloadStarted, setDownloadStarted] = useState(false);
   
-  // Novo estado para controlar se o mapa está pronto para ser exibido
-  const [isMapReady, setIsMapReady] = useState(false);
+  // Sempre iniciar como true para garantir que o botão não fique desabilitado desnecessariamente
+  const [isMapReady, setIsMapReady] = useState(true);
 
   // Pre-render desktop view for PNG export (hidden by default)
   const desktopMapRef = useRef(null);
 
+  // Debug para verificar o estado das referências e variáveis importantes
+  useEffect(() => {
+    console.log("Estado atual: isMapReady =", isMapReady);
+    console.log("mapRef disponível:", !!mapRef.current);
+    console.log("desktopMapRef disponível:", !!desktopMapRef.current);
+  }, [isMapReady]);
+
   // Garantir que a referência para o mapa desktop esteja pronta antes de exportar
   useEffect(() => {
     // Pré-renderizar o mapa desktop para exportação
+    if (mapData) {
+      console.log("mapData carregado, inicializando desktop map");
+      // Definir isMapReady como true após um tempo para garantir que os componentes foram montados
+      const timer = setTimeout(() => {
+        setIsMapReady(true);
+        console.log("Map marcado como pronto (timeout)");
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [mapData]);
+
+  // Certificar-se de que o mapa desktop foi montado corretamente
+  useEffect(() => {
     if (desktopMapRef.current && mapData) {
       // Forçar renderização inicial
       desktopMapRef.current.style.visibility = 'hidden';
       desktopMapRef.current.style.position = 'absolute';
       desktopMapRef.current.style.left = '-9999px';
+      console.log("Desktop map configurado para renderização oculta");
     }
   }, [mapData]);
+
+  // Effect para verificar quando o download foi concluído
+  useEffect(() => {
+    if (downloadStarted && exportProgress === 100) {
+      // Detectar o fim do download - esperar um tempo adicional para garantir que o download seja concluído
+      const downloadTimer = setTimeout(() => {
+        console.log("Download presumivelmente concluído, finalizando estados de carregamento");
+        setDownloadStarted(false);
+        setIsExporting(false);
+        setExportProgress(0);
+        setIsPNGExporting(false);
+      }, 3000); // Tempo extra para garantir que o download seja concluído
+      
+      return () => clearTimeout(downloadTimer);
+    }
+  }, [downloadStarted, exportProgress]);
 
   // Function to go back to home page
   const handleBackToHome = () => {
@@ -53,9 +92,14 @@ export function MindMapView() {
 
   // Function to download the map as JSON
   const handleDownloadJSON = () => {
-    if (!mapData) return;
+    if (!mapData) {
+      console.error("Tentativa de baixar JSON sem dados disponíveis");
+      alert("Não há dados para baixar");
+      return;
+    }
 
     try {
+      console.log("Iniciando download do JSON");
       // Create a Blob with the JSON data
       const jsonBlob = new Blob([JSON.stringify(mapData, null, 2)], { type: 'application/json' });
 
@@ -63,37 +107,55 @@ export function MindMapView() {
       const link = document.createElement('a');
       link.download = `mindmap-${templateType}-${new Date().toISOString().slice(0, 10)}.json`;
       link.href = URL.createObjectURL(jsonBlob);
+      document.body.appendChild(link); // Adicionar ao DOM para garantir que funcione em todos os navegadores
       link.click();
-
+      
       // Clean up
-      URL.revokeObjectURL(link.href);
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      }, 100);
+      
+      console.log("Download do JSON concluído");
     } catch (error) {
       console.error('Erro ao gerar JSON:', error);
       alert('Falha ao gerar JSON. Por favor, tente novamente.');
     }
   };
 
-  // Função com tempos de carregamento ajustados
+  // Função com tempos de carregamento ajustados e melhor tratamento de erros
   const handleDownloadPNG = async () => {
-    if (!desktopMapRef.current) return;
+    console.log("Iniciando processo de download PNG");
+    console.log("desktopMapRef existe:", !!desktopMapRef.current);
+    
+    // Verificação adicional para garantir que temos dados para exportar
+    if (!mapData) {
+      console.error("Tentativa de baixar PNG sem dados disponíveis");
+      alert("Não há dados para baixar");
+      return;
+    }
+    
+    // Se não temos a referência, tente usar o mapa principal visível
+    const elementToCapture = desktopMapRef.current || mapRef.current;
+    
+    if (!elementToCapture) {
+      console.error("Nenhuma referência de mapa disponível para captura");
+      alert("Não foi possível localizar o mapa para exportação. Tente recarregar a página.");
+      return;
+    }
     
     try {
       // Ativar estados de carregamento ANTES de qualquer operação
       setIsPNGExporting(true);
       setIsExporting(true);
       setExportProgress(10);
+      console.log("Estados de carregamento ativados");
       
       // Aumentar o tempo inicial para visualizar melhor o loading
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Sempre usar o mapa desktop para exportação
-      const elementToCapture = desktopMapRef.current;
-      
-      if (!elementToCapture) {
-        throw new Error("Não foi possível encontrar o elemento para captura");
-      }
-      
       // Armazenar estilos originais
+      console.log("Salvando estilos originais");
       const originalStyles = {
         backgroundColor: elementToCapture.style.backgroundColor,
         padding: elementToCapture.style.padding,
@@ -111,6 +173,7 @@ export function MindMapView() {
       setExportProgress(20);
       
       // Definir estilos para captura
+      console.log("Aplicando estilos para exportação");
       elementToCapture.style.backgroundColor = '#0a0a1e';
       elementToCapture.style.padding = '40px';
       elementToCapture.style.transform = 'scale(1)';
@@ -119,9 +182,12 @@ export function MindMapView() {
       elementToCapture.style.position = 'fixed';
       elementToCapture.style.top = '0';
       elementToCapture.style.left = '0';
+      elementToCapture.style.width = '100%';
+      elementToCapture.style.height = '100%';
       elementToCapture.style.zIndex = '9999';
       
       // Pré-processamento para garantir que todos os nós estejam visíveis
+      console.log("Preparando nós expansíveis");
       const expandableElements = elementToCapture.querySelectorAll('[data-expandable="true"]');
       const originalNodeStyles = [];
       
@@ -149,6 +215,7 @@ export function MindMapView() {
       setExportProgress(50);
       
       // Gerar PNG com alta qualidade
+      console.log("Iniciando conversão para PNG");
       const dataUrl = await toPng(elementToCapture, {
         quality: 0.98,
         backgroundColor: '#0a0a1e',
@@ -171,24 +238,38 @@ export function MindMapView() {
         }
       });
       
+      console.log("Conversão para PNG concluída");
+      
       // Adicionar um delay antes de atualizar o progresso
       await new Promise(resolve => setTimeout(resolve, 800));
       setExportProgress(80);
       
+      // Marcar que o download está sendo iniciado
+      setDownloadStarted(true);
+      
       // Criar link de download
+      console.log("Criando link de download");
       const link = document.createElement('a');
       link.download = `mindmap-${templateType}-${new Date().toISOString().slice(0, 10)}.png`;
       link.href = dataUrl;
+      document.body.appendChild(link); // Adicionar ao DOM para garantir que funcione em todos os navegadores
       link.click();
       
       // Adicionar um delay após concluir a exportação
       await new Promise(resolve => setTimeout(resolve, 800));
       setExportProgress(100);
       
-      // Delay final para mostrar 100% antes de ocultar
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log("Download do PNG iniciado - aguardando conclusão");
+      
+      // Remover o link após o uso
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+      }, 100);
       
       // Restaurar estilos originais
+      console.log("Restaurando estilos originais");
       // Restaurar estilos do elemento principal
       elementToCapture.style.backgroundColor = originalStyles.backgroundColor;
       elementToCapture.style.padding = originalStyles.padding;
@@ -211,16 +292,18 @@ export function MindMapView() {
         }
       });
       
-      // Resetar todos os estados de carregamento
-      setIsExporting(false);
-      setExportProgress(0);
-      setIsPNGExporting(false);
+      console.log("Estilos restaurados - tela de carregamento permanece ativa até download concluir");
+      
+      // Nota importante: Não resetamos os estados de carregamento aqui!
+      // O useEffect que monitora downloadStarted e exportProgress se encarregará disso
+      // após um tempo adicional para garantir que o download seja concluído
       
     } catch (error) {
-      console.error('Erro ao gerar PNG:', error);
-      alert('Falha ao gerar PNG. Por favor, tente novamente.');
+      console.error('Erro detalhado ao gerar PNG:', error);
+      alert(`Falha ao gerar PNG: ${error.message || 'Erro desconhecido'}. Por favor, tente novamente.`);
       
       // Certifique-se de resetar todos os estados mesmo em erro
+      setDownloadStarted(false);
       setIsExporting(false);
       setExportProgress(0);
       setIsPNGExporting(false);
@@ -229,34 +312,40 @@ export function MindMapView() {
 
   // Método para sinalizar quando o mapa está pronto para exibição
   const handleMapReady = () => {
+    console.log("handleMapReady chamado: Mapa está pronto");
     setIsMapReady(true);
   };
 
   // Renderizar o mapa mental apropriado com base no template
   const renderMindMap = (forceDesktopLayout = false) => {
-    if (!mapData || !templateType) return null;
+    if (!mapData || !templateType) {
+      console.log("Dados insuficientes para renderizar o mapa");
+      return null;
+    }
 
     try {
+      console.log(`Renderizando mapa ${templateType}${forceDesktopLayout ? ' (desktop)' : ''}`);
       switch (templateType) {
         case "radial":
           return <Radial 
                    data={mapData} 
                    forceDesktopLayout={forceDesktopLayout}
-                   onMapReady={!forceDesktopLayout ? handleMapReady : undefined} 
+                   onMapReady={handleMapReady} 
                  />;
         case "hierarquico":
           return <Hierarchical 
                    data={mapData} 
                    forceDesktopLayout={forceDesktopLayout}
-                   onMapReady={!forceDesktopLayout ? handleMapReady : undefined} 
+                   onMapReady={handleMapReady} 
                  />;
         case "linear":
           return <Linear 
                    data={mapData} 
                    forceDesktopLayout={forceDesktopLayout}
-                   onMapReady={!forceDesktopLayout ? handleMapReady : undefined} 
+                   onMapReady={handleMapReady} 
                  />;
         default:
+          console.error(`Tipo de mapa não reconhecido: ${templateType}`);
           return <NoDataMessage>Tipo de mapa não reconhecido</NoDataMessage>;
       }
     } catch (error) {
@@ -267,6 +356,7 @@ export function MindMapView() {
 
   // Se não houver dados, mostrar mensagem
   if (!mapData || !templateType) {
+    console.log("Nenhum dado disponível para exibição do mapa");
     return (
       <Container>
         <Header>
@@ -340,7 +430,7 @@ export function MindMapView() {
           $gradient
           $colorStart={theme.colors.neonBlue}
           $colorEnd={theme.colors.neonPurple}
-          disabled={isExporting || isPNGExporting || !isMapReady} // Adicionado !isMapReady
+          disabled={isExporting || isPNGExporting} // Removida a dependência de isMapReady
         >
           {isExporting ? `Exportando... ${exportProgress}%` : 'Baixar como PNG'}
         </DefaultButton>
@@ -349,7 +439,11 @@ export function MindMapView() {
       {isExporting && (
         <LoadingOverlay>
           <div className="spinner"></div>
-          <div className="progress">Gerando imagem... {exportProgress}%</div>
+          <div className="progress">
+            {exportProgress < 100 
+              ? `Gerando imagem... ${exportProgress}%` 
+              : "Concluindo download, aguarde..."}
+          </div>
         </LoadingOverlay>
       )}
 
