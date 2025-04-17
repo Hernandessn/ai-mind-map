@@ -1,7 +1,6 @@
+import { PreviewBox, PreviewImage, PreviewsContainer, PreviewTitle, RemoveButton } from "./styles";
 
-import { PreviewBox, PreviewImage, PreviewsContainer, PreviewTitle } from "../../components/FilePreview/styles";
-
-export function FilePreview({ fileData }) {
+export function FilePreview({ fileData, onRemove }) {
   if (!fileData) return null;
   
   return (
@@ -14,6 +13,9 @@ export function FilePreview({ fileData }) {
           src={fileData.preview} 
           alt={fileData.type === 'pdf' ? 'PDF Preview' : 'Imagem Selecionada'} 
         />
+        <RemoveButton onClick={onRemove}>
+          Remover Arquivo
+        </RemoveButton>
       </PreviewBox>
     </PreviewsContainer>
   );

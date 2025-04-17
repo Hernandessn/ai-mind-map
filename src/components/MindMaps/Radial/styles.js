@@ -93,7 +93,7 @@ export const TopicsList = styled.ul`
 
 export const TopicItem = styled.li`
   margin: 6px 0;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.4;
   word-break: break-word;
 `;

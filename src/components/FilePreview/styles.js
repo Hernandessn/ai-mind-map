@@ -15,6 +15,7 @@ export const PreviewBox = styled.div`
   padding: 15px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
+  position: relative;
   
   &:hover {
     transform: translateY(-5px);
@@ -43,5 +44,21 @@ export const PreviewImage = styled.img`
   
   @media (max-width: 768px) {
     max-width: 100%;
+  }
+`;
+
+export const RemoveButton = styled.button`
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #c0392b;
   }
 `;
