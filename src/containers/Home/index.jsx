@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TemplateCards } from "../../components/TemplateCard";
 import { MapSection } from "../../components/MapSection";
 import { DefaultButton } from "../../components/Button";
@@ -19,14 +19,15 @@ import {
   Main,
   SubTitle,
   Title,
-  LoadingIndicator,
-  ProcessingInfo,
   DebugViewerContainer,
   DebugHeader,
   DebugContent,
   DebugControlButton,
   TextStats,
-  ErrorMessage
+  ErrorMessage,
+  AlertBox,
+  ContainerAlert,
+  Contact
 } from "./styles";
 
 import radialImage from '/src/assets/map-radial.png';
@@ -65,7 +66,7 @@ export function Home() {
 
   const handleFileSelect = async (file) => {
     if (!file) return;
-    
+
     setPdfText('');
     setFileData(null);
 
@@ -284,8 +285,8 @@ export function Home() {
             </InputContainer>
 
             <ButtonContainer>
-              <FileViewer 
-                onFileSelect={handleFileSelect} 
+              <FileViewer
+                onFileSelect={handleFileSelect}
                 resetTrigger={resetTrigger}
               />
 
@@ -356,6 +357,13 @@ export function Home() {
             <p style={{ whiteSpace: 'pre-wrap' }}>{mapResult}</p>
           </div>
         )}
+        <ContainerAlert>
+          <AlertBox>
+            <strong>Atenção:</strong> Caso ocorra um erro ao gerar o mapa mental, é possível que o <strong>limite de uso mensal</strong> tenha sido atingido.
+            Tente novamente mais tarde ou entre em contato com o 
+            <Contact to="" target='_blank'>Desenvolvedor</Contact>.
+          </AlertBox>
+        </ContainerAlert>
 
         <MapSection />
         <Footer />

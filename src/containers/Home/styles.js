@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { theme } from '../../styles/theme';
-
+import { Link } from "react-router-dom";
 export const Header = styled.header`
   padding: 20px 0;
   border-bottom: 1px solid rgba(0, 243, 255, 0.2);
@@ -356,3 +356,20 @@ export const ErrorMessage = styled.div`
   border-radius: 8px;
   font-size: 0.9rem;
 `;
+
+export const ContainerAlert = styled.div`
+  display: flex;
+  align-items: center;
+; justify-content: center;
+`;
+export const AlertBox = styled.div`
+  padding: 1rem;
+  background: linear-gradient(90deg, var(#00f3ff), var( #b700ff));
+  border-left: 5px solid #fbc02d;
+  color: #ffff;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  width: 60%;
+`;
+export const Contact = styled(Link)``
