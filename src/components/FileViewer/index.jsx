@@ -47,7 +47,6 @@ export function FileViewer({ onFileSelect, resetTrigger }) {
       
       return pageText.length < 50 && hasImageOperators;
     } catch (error) {
-      console.error("Erro ao verificar se o PDF é baseado em imagem:", error);
       return false;
     }
   };
@@ -75,7 +74,6 @@ export function FileViewer({ onFileSelect, resetTrigger }) {
         
         fullText += `\n----- PÁGINA ${pageNum} -----\n\n${pageText}\n\n`;
       } catch (error) {
-        console.error(`Erro ao extrair texto da página ${pageNum}:`, error);
       }
     }
 
@@ -119,7 +117,6 @@ export function FileViewer({ onFileSelect, resetTrigger }) {
         
         fullOcrText += `\n----- PÁGINA ${pageNum} (OCR) -----\n\n${result.data.text}\n\n`;
       } catch (error) {
-        console.error(`Erro ao aplicar OCR na página ${pageNum}:`, error);
         setProcessingStatus(`Erro no OCR da página ${pageNum}: ${error.message}`);
       }
     }
@@ -179,7 +176,6 @@ export function FileViewer({ onFileSelect, resetTrigger }) {
         });
       }
     } catch (error) {
-      console.error("Erro ao processar PDF:", error);
       alert("Houve um erro ao processar o PDF. Por favor, tente novamente.");
     } finally {
       setIsProcessing(false);
@@ -217,7 +213,6 @@ export function FileViewer({ onFileSelect, resetTrigger }) {
         });
       }
     } catch (error) {
-      console.error("Erro ao processar imagem:", error);
       alert("Houve um erro ao processar a imagem. Por favor, tente novamente.");
     } finally {
       setIsProcessing(false);

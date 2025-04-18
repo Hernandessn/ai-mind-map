@@ -13,7 +13,6 @@ export async function ServicesGemini(prompt) {
 
     return text;
   } catch (error) {
-    console.error("Erro ao chamar a IA:", error);
     return "Erro ao gerar mapa mental.";
   }
 }

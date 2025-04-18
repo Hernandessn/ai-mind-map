@@ -87,7 +87,6 @@ export function Home() {
 
   const handleCardClick = (template) => {
     setSelectedTemplate(template);
-    console.log(`Template ${template} selecionado`);
   };
 
   // Função para tentar extrair conteúdo JSON de uma string que pode conter texto extra
@@ -104,7 +103,6 @@ export function Home() {
         try {
           return JSON.parse(match[1]);
         } catch (e) {
-          console.error("Erro ao analisar bloco JSON extraído:", e);
         }
       }
 
@@ -119,7 +117,6 @@ export function Home() {
         try {
           return JSON.parse(objMatch[1]);
         } catch (e) {
-          console.error("Erro ao analisar objeto JSON extraído:", e);
         }
       }
 
@@ -127,7 +124,6 @@ export function Home() {
         try {
           return JSON.parse(arrMatch[1]);
         } catch (e) {
-          console.error("Erro ao analisar array JSON extraído:", e);
         }
       }
     }
@@ -153,7 +149,6 @@ export function Home() {
       return alert("Por favor, selecione um modelo de mapa mental!");
     }
 
-    console.log("Enviando para a API. Tamanho do conteúdo:", finalPrompt.length);
 
     try {
       // Se o texto for muito grande, pode ser necessário truncá-lo dependendo dos limites da API
@@ -162,7 +157,6 @@ export function Home() {
         ? finalPrompt.substring(0, maxLength) + "..."
         : finalPrompt;
 
-      console.log(`Prompt final enviado para a API: ${trimmedPrompt.length} caracteres`);
 
       // Adicionando instruções mais específicas para formatar o mapa mental
       const enhancedPrompt = `
@@ -244,7 +238,6 @@ export function Home() {
       const jsonData = extractJsonFromString(response);
 
       if (jsonData) {
-        console.log("JSON analisado com sucesso:", jsonData);
         setParsedMapData(jsonData);
         setJsonError('');
 
@@ -256,12 +249,10 @@ export function Home() {
           }
         });
       } else {
-        console.error("Falha ao analisar JSON da resposta");
         setJsonError('Não foi possível processar o resultado como JSON válido. Tente novamente ou ajuste o conteúdo.');
       }
 
     } catch (error) {
-      console.error("Erro ao gerar mapa:", error);
       alert("Erro ao gerar mapa mental. Tente novamente.");
 
       setJsonError('Ocorreu um erro durante a geração do mapa mental. Tente novamente.');

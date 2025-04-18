@@ -8,7 +8,6 @@ import { theme } from "../../styles/theme";
 export const Footer = () => {
   const handleAboutClick = () => {
     // Implementação da função ClickAboutButton
-    console.log("Botão Sobre clicado");
     // Adicione aqui a lógica desejada
   };
 

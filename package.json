@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "nodemon src/services/testGeminiApi.js",
-    "check": "node src/services/checkModels.js"
+    "check": "node src/services/checkModels.js",
+    "clean:logs": "powershell -Command \"Get-ChildItem -Path ./src -Recurse -Include *.js,*.ts,*.jsx,*.tsx | ForEach-Object { (Get-Content $_) -notmatch 'console\\.(log|warn|error)' | Set-Content $_ }\""
   },
   "dependencies": {
     "@google/genai": "^0.7.0",

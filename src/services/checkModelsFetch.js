@@ -11,10 +11,7 @@ const listModels = async () => {
     }
 
     const data = await response.json();
-    console.log("Modelos disponíveis:");
-    data.models.forEach(model => console.log(`- ${model.name}`));
   } catch (error) {
-    console.error("Erro ao buscar modelos:", error);
   }
 };
 
