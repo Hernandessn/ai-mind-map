@@ -33,7 +33,7 @@ import radialImage from '/src/assets/map-radial.png';
 import linearImage from '/src/assets/map-linear.png';
 import hierarquicoImage from '/src/assets/map-hierarquico.png';
 
-import { ServicesGemini } from '../../services/testGeminiAPI';
+import { ServicesGemini } from '../../services/ServicesGeminiAPI';
 import { FileViewer } from '../../components/FileViewer';
 import { FilePreview } from '../../components/FilePreview';
 
