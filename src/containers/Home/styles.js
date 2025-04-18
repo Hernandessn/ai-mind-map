@@ -356,12 +356,13 @@ export const ErrorMessage = styled.div`
   border-radius: 8px;
   font-size: 0.9rem;
 `;
-
 export const ContainerAlert = styled.div`
   display: flex;
   align-items: center;
-; justify-content: center;
+  justify-content: center;
+  padding: 1rem;
 `;
+
 export const AlertBox = styled.div`
   padding: 1rem;
   background: linear-gradient(90deg, var(#00f3ff), var( #b700ff));
@@ -371,5 +372,20 @@ export const AlertBox = styled.div`
   margin-bottom: 1rem;
   font-size: 0.95rem;
   width: 60%;
+
+  @media (max-width: 1200px) {
+    width: 70%; /* Ajuste para telas médias */
+  }
+
+  @media (max-width: 768px) {
+    width: 80%; /* Ajuste para telas menores */
+    font-size: 0.85rem; /* Ajusta o tamanho da fonte */
+  }
+
+  @media (max-width: 480px) {
+    width: 90%; /* Ajuste para telas pequenas */
+    font-size: 0.8rem; /* Ajusta o tamanho da fonte */
+  }
 `;
+
 export const Contact = styled(Link)``
