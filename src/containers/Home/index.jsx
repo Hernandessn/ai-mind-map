@@ -361,7 +361,7 @@ export function Home() {
           <AlertBox>
             <strong>Atenção:</strong> Caso ocorra um erro ao gerar o mapa mental, é possível que o <strong>limite de uso mensal</strong> tenha sido atingido.
             Tente novamente mais tarde ou entre em contato com o 
-            <Contact to="" target='_blank'>Desenvolvedor</Contact>.
+            <Contact to="https://www.instagram.com/hernandes.sn/" target='_blank'>Desenvolvedor</Contact>.
           </AlertBox>
         </ContainerAlert>
 
