@@ -30,6 +30,7 @@ export function MindMapView() {
   const [isPNGExporting, setIsPNGExporting] = useState(false);
   const [downloadStarted, setDownloadStarted] = useState(false);
 
+
   // Sempre iniciar como true para garantir que o botão não fique desabilitado desnecessariamente
   const [isMapReady, setIsMapReady] = useState(true);
 
@@ -307,7 +308,13 @@ export function MindMapView() {
       setIsExporting(false);
       setExportProgress(0);
       setIsPNGExporting(false);
+
     }
+    // Redirecionar para home após garantir tempo para o download iniciar
+    setTimeout(() => {
+      navigate('/home');
+    }, 1000);
+
   };
 
   // Método para sinalizar quando o mapa está pronto para exibição
