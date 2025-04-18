@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
+// Componentes da aplicação
 import { TemplateCards } from "../../components/TemplateCard";
 import { MapSection } from "../../components/MapSection";
 import { DefaultButton } from "../../components/Button";
 import { Footer } from "../../components/Footer";
+import { FileViewer } from '../../components/FileViewer';
+import { FilePreview } from '../../components/FilePreview';
 
+import { generateMindMap } from '../../utils/handleGenerateMap';
+// Estilos e tema
 import { theme } from "../../styles/theme";
-
 import {
   ButtonContainer,
   ContainerComponent,
@@ -30,114 +35,56 @@ import {
   Contact
 } from "./styles";
 
+// Imagens dos modelos de mapas mentais
 import radialImage from '/src/assets/map-radial.png';
 import linearImage from '/src/assets/map-linear.png';
 import hierarquicoImage from '/src/assets/map-hierarquico.png';
 
+// Serviço que faz a chamada à IA
 import { ServicesGemini } from '../../services/ServicesGeminiAPI';
-import { FileViewer } from '../../components/FileViewer';
-import { FilePreview } from '../../components/FilePreview';
 
+// Importando o hook
+import { useFileToText } from '../../hooks/useFileToText';
+
+// Componente para exibir o texto extraído (debug)
 const DebugTextViewer = ({ text, isVisible }) => {
   if (!isVisible || !text) return null;
 
   return (
     <DebugViewerContainer>
       <DebugHeader>Debug: Texto Extraído ({text.length} caracteres)</DebugHeader>
-      <DebugContent>
-        {text || "Nenhum texto extraído"}
-      </DebugContent>
+      <DebugContent>{text}</DebugContent>
     </DebugViewerContainer>
   );
 };
 
 export function Home() {
   const navigate = useNavigate();
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [pdfText, setPdfText] = useState('');
-  const [fileData, setFileData] = useState(null);
-  const [topic, setTopic] = useState('');
-  const [mapResult, setMapResult] = useState('');
-  const [parsedMapData, setParsedMapData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
-  const [jsonError, setJsonError] = useState('');
-  const [resetTrigger, setResetTrigger] = useState(false);
 
-  const handleFileSelect = async (file) => {
-    if (!file) return;
+  // Usando o hook para gerenciar arquivos
+  const {
+    pdfText,
+    fileData,
+    resetTrigger,
+    handleFileSelect,
+    handleRemoveFile,
+  } = useFileToText();
 
-    setPdfText('');
-    setFileData(null);
+  // Estados principais
+  const [selectedTemplate, setSelectedTemplate] = useState(null); // Template selecionado (radial, hierárquico, linear)
+  const [topic, setTopic] = useState(''); // Tema digitado manualmente
+  const [mapResult, setMapResult] = useState(''); // Resposta bruta da API
+  const [parsedMapData, setParsedMapData] = useState(null); // JSON extraído da resposta
+  const [isLoading, setIsLoading] = useState(false); // Loading enquanto a IA processa
+  const [showDebug, setShowDebug] = useState(false); // Mostrar ou ocultar texto extraído
+  const [jsonError, setJsonError] = useState(''); // Erro ao extrair JSON da resposta
 
-    if (file.text) {
-      setFileData(file);
-      setPdfText(file.text);
-    } else if (file.type === 'image' || file.type === 'pdf') {
-      setFileData(file);
-    }
-  };
-
-  const handleRemoveFile = () => {
-    setFileData(null);
-    setPdfText('');
-    setResetTrigger(prev => !prev);
-  };
-
-
-
-  const handleCardClick = (template) => {
-    setSelectedTemplate(template);
-  };
-
-  // Função para tentar extrair conteúdo JSON de uma string que pode conter texto extra
-  const extractJsonFromString = (str) => {
-    try {
-      // Tenta analisar diretamente primeiro
-      return JSON.parse(str);
-    } catch (e) {
-      // Tenta encontrar blocos de código JSON
-      const jsonPattern = /```(?:json)?\s*(\{[\s\S]*?\}|\[[\s\S]*?\])\s*```/;
-      const match = str.match(jsonPattern);
-
-      if (match && match[1]) {
-        try {
-          return JSON.parse(match[1]);
-        } catch (e) {
-        }
-      }
-
-      // Última tentativa: procurar por algo que pareça um objeto ou array JSON
-      const objectPattern = /(\{[\s\S]*\})/;
-      const arrayPattern = /(\[[\s\S]*\])/;
-
-      const objMatch = str.match(objectPattern);
-      const arrMatch = str.match(arrayPattern);
-
-      if (objMatch && objMatch[1]) {
-        try {
-          return JSON.parse(objMatch[1]);
-        } catch (e) {
-        }
-      }
-
-      if (arrMatch && arrMatch[1]) {
-        try {
-          return JSON.parse(arrMatch[1]);
-        } catch (e) {
-        }
-      }
-    }
-
-    return null;
-  };
-
+  // Gera o mapa mental com base no tema digitado ou texto extraído
   const handleGenerateMap = async () => {
     setIsLoading(true);
     setParsedMapData(null);
     setJsonError('');
 
-    // Verifica qual conteúdo usar: texto do PDF ou tópico digitado
     const finalPrompt = pdfText || topic;
 
     if (!finalPrompt) {
@@ -150,121 +97,36 @@ export function Home() {
       return alert("Por favor, selecione um modelo de mapa mental!");
     }
 
-
     try {
-      // Se o texto for muito grande, pode ser necessário truncá-lo dependendo dos limites da API
-      const maxLength = 100000; // Ajuste conforme necessário para a API
-      const trimmedPrompt = finalPrompt.length > maxLength
-        ? finalPrompt.substring(0, maxLength) + "..."
-        : finalPrompt;
+      const { jsonData, response } = await generateMindMap({
+        prompt: finalPrompt,
+        selectedTemplate,
+        navigate,
+      });
 
-
-      // Adicionando instruções mais específicas para formatar o mapa mental
-      const enhancedPrompt = `
-      Você é uma inteligência artificial especialista em geração de mapas mentais. 
-      Com base no conteúdo fornecido abaixo, gere um mapa mental no formato JSON conforme o modelo de estrutura selecionado. 
-      Retorne **somente o JSON**, sem explicações adicionais e sem comentários fora da estrutura.
-      
-      ---
-      
-      🧠 Modelo selecionado: ${selectedTemplate}
-      
-      📄 Conteúdo base para geração do mapa:
-      """
-      ${trimmedPrompt}
-      """
-      
-      ---
-      
-      📌 Instruções por modelo:
-      
-      🔵 Se o modelo for **Radial**, use esta estrutura:
-      {
-        "title": "Título Central",
-        "nodes": [
-          {
-            "title": "Categoria 1",
-            "subtopics": ["Subtopico A", "Subtopico B", "Subtopico C"]
-          },
-          {
-            "title": "Categoria 2",
-            "subtopics": ["Subtopico A", "Subtopico B"]
-          }
-        ]
-      }
-      
-      🔶 Se o modelo for **Hierárquico**, use esta estrutura:
-      {
-        "title": "Tema principal",
-        "type": "raiz",
-        "children": [
-          {
-            "title": "Nó 1",
-            "type": "categoria",
-            "children": [
-              {
-                "title": "Subcategoria A",
-                "type": "sub",
-                "children": [
-                  { "title": "Item 1", "type": "detalhe" },
-                  { "title": "Item 2", "type": "detalhe" }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-      
-      🟢 Se o modelo for **Linear**, use esta estrutura:
-      [
-        {
-          "title": "Etapa 1",
-          "description": "Descrição da etapa 1"
-        },
-        {
-          "title": "Etapa 2",
-          "description": "Descrição da etapa 2"
-        }
-      ]
-      
-      ---
-      
-      ⚠️ Retorne apenas o JSON **válido e bem formatado** conforme o modelo escolhido, sem texto extra.
-      `;
-
-      const response = await ServicesGemini(enhancedPrompt);
       setMapResult(response);
-
-      // Tentar extrair e analisar o JSON da resposta
-      const jsonData = extractJsonFromString(response);
 
       if (jsonData) {
         setParsedMapData(jsonData);
-        setJsonError('');
-
-        // Navegar para a página de visualização do mapa com os dados
         navigate('/mindmap-view', {
           state: {
             mapData: jsonData,
-            templateType: selectedTemplate
-          }
+            templateType: selectedTemplate,
+          },
         });
       } else {
-        setJsonError('Não foi possível processar o resultado como JSON válido. Tente novamente ou ajuste o conteúdo.');
+        setJsonError('Não foi possível processar o resultado como JSON válido.');
       }
-
     } catch (error) {
-      alert("Erro ao gerar mapa mental. Tente novamente.");
-
       setJsonError('Ocorreu um erro durante a geração do mapa mental. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
   };
 
-
   return (
     <>
+      {/* Cabeçalho */}
       <Header>
         <ContainerText>
           <Title>IA de Mapas Mentais</Title>
@@ -272,6 +134,7 @@ export function Home() {
         </ContainerText>
       </Header>
 
+      {/* Conteúdo principal */}
       <Main>
         <InputSection>
           <ContainerComponent>
@@ -304,13 +167,15 @@ export function Home() {
           </ContainerComponent>
         </InputSection>
 
-        {fileData && <FilePreview fileData={fileData} onRemove={handleRemoveFile} />}
+        {/* Pré-visualização do arquivo */}
+        {fileData && (
+          <FilePreview fileData={fileData} onRemove={handleRemoveFile} />
+        )}
 
+        {/* Informações de debug e texto extraído */}
         {pdfText && (
           <TextStats>
-            <p>
-              {`Texto extraído: ${pdfText.length} caracteres`}
-            </p>
+            <p>{`Texto extraído: ${pdfText.length} caracteres`}</p>
             <DebugControlButton onClick={() => setShowDebug(!showDebug)}>
               {showDebug ? 'Ocultar Texto' : 'Mostrar Texto'}
             </DebugControlButton>
@@ -319,52 +184,55 @@ export function Home() {
 
         <DebugTextViewer text={pdfText} isVisible={showDebug} />
 
+        {/* Exibição de erro se não conseguir gerar o JSON */}
         {jsonError && <ErrorMessage>{jsonError}</ErrorMessage>}
 
+        {/* Cartões com os templates disponíveis */}
         <SectionCards>
           <TemplateCards
             img={radialImage}
             name="Radial"
-            Description="Ideal para brainstorming e organização de ideias a partir de um conceito central, com ramificações em todas as direções."
+            Description="Ideal para brainstorming com ramificações em todas as direções."
             dataTemplate="radial"
             isSelected={selectedTemplate === "radial"}
-            onClick={() => handleCardClick("radial")}
+            onClick={() => setSelectedTemplate("radial")}
           />
-
           <TemplateCards
             img={hierarquicoImage}
             name="Hierárquico"
-            Description="Perfeito para estruturas organizacionais, planos de projeto ou qualquer conteúdo com níveis claros de subordinação."
+            Description="Perfeito para estruturas com subníveis organizacionais."
             dataTemplate="hierarquico"
             isSelected={selectedTemplate === "hierarquico"}
-            onClick={() => handleCardClick("hierarquico")}
+            onClick={() => setSelectedTemplate("hierarquico")}
           />
-
           <TemplateCards
             img={linearImage}
             name="Linear"
-            Description="Ideal para processos sequenciais, linhas do tempo, ou fluxos de trabalho com etapas claras e ordenadas."
+            Description="Ideal para processos sequenciais e fluxos de trabalho."
             dataTemplate="linear"
             isSelected={selectedTemplate === "linear"}
-            onClick={() => handleCardClick("linear")}
+            onClick={() => setSelectedTemplate("linear")}
           />
         </SectionCards>
 
-        {/* Exibição de erro de JSON, se houver */}
+        {/* Exibe a resposta bruta caso não consiga extrair o JSON */}
         {mapResult && !parsedMapData && jsonError && (
           <div style={{ marginTop: '1rem', background: '#000', padding: '1rem', borderRadius: '8px' }}>
             <h3>Resposta da API (JSON não processado):</h3>
             <p style={{ whiteSpace: 'pre-wrap' }}>{mapResult}</p>
           </div>
         )}
+
+        {/* Alerta sobre limite de uso da API */}
         <ContainerAlert>
           <AlertBox>
-            <strong>Atenção:</strong> Caso ocorra um erro ao gerar o mapa mental, é possível que o <strong>limite de uso mensal</strong> tenha sido atingido.
+            <strong>Atenção:</strong> Caso ocorra um erro ao gerar o mapa mental, pode ser que o <strong>limite de uso mensal</strong> tenha sido atingido.
             Tente novamente mais tarde ou entre em contato com o 
             <Contact to="https://www.instagram.com/hernandes.sn/" target='_blank'>Desenvolvedor</Contact>.
           </AlertBox>
         </ContainerAlert>
 
+        {/* Área de exibição dos mapas */}
         <MapSection />
         <Footer />
       </Main>
