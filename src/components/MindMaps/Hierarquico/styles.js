@@ -1,4 +1,4 @@
-// styles.js - versão responsiva com componentes de zoom adicionados
+// styles.js - atualização com suporte para forceDesktopLayout
 import styled from "styled-components";
 
 export const Container = styled.div`
@@ -13,6 +13,13 @@ export const Container = styled.div`
   
   @media (max-width: 1200px) {
     padding: 10px;
+  }
+  
+  &.force-desktop-layout {
+    padding: 40px;
+    width: 100%;
+    overflow: visible;
+    min-width: 1200px; /* Forçar largura mínima para desktop */
   }
 `;
 
@@ -40,7 +47,7 @@ export const NodeContent = styled.div`
   text-align: center;
   font-weight: ${({ level }) => (level === 0 ? '600' : level === 1 ? '500' : '400')};
   font-size: ${({ level }) => (level === 0 ? '16px' : level === 1 ? '15px' : '14px')};
-  white-space: normal; /* Permite quebra de texto */
+  white-space: normal;
   word-break: break-word;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
@@ -122,10 +129,7 @@ export const ChildrenContainer = styled.div`
     gap: 10px;
   }
   
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-  }
+  /* Removida a alteração de direção para layout mobile */
 `;
 
 export const LineDown = styled.div`
@@ -139,12 +143,6 @@ export const LineAcross = styled.div`
   height: 2px;
   flex: 1;
   background-color: #888;
-  
-  @media (max-width: 768px) {
-    display: ${props => props.hideOnMobile ? 'none' : 'block'};
-    width: ${props => props.vertical ? '2px' : 'auto'};
-    height: ${props => props.vertical ? '20px' : '2px'};
-  }
 `;
 
 export const HorizontalConnector = styled.div`
@@ -155,16 +153,6 @@ export const HorizontalConnector = styled.div`
   top: 0;
   height: 100%;
   width: 80px;
-  
-  @media (max-width: 768px) {
-    position: relative;
-    right: auto;
-    top: auto;
-    width: auto;
-    flex-direction: column;
-    margin-top: 10px;
-    height: auto;
-  }
 `;
 
 export const ConnectorsWrapper = styled.div`
@@ -176,10 +164,6 @@ export const ConnectorsWrapper = styled.div`
   @media (max-width: 992px) {
     gap: 10px;
   }
-  
-  @media (max-width: 768px) {
-    display: ${props => props.hideOnMobile ? 'none' : 'grid'};
-  }
 `;
 
 export const ResponsiveOrgChart = styled.div`
@@ -190,9 +174,15 @@ export const ResponsiveOrgChart = styled.div`
   @media (min-width: 1400px) {
     overflow-x: visible;
   }
+  
+  &.full-width-export {
+    overflow-x: visible;
+    width: auto;
+    min-width: 1200px; /* Garantir largura mínima para exportação */
+  }
 `;
 
-// Adicionando os componentes de controle de zoom que estavam faltando
+// Adicionando componentes de controle de zoom
 export const ZoomControls = styled.div`
   display: flex;
   justify-content: center;
@@ -221,5 +211,33 @@ export const ZoomButton = styled.button`
   &:focus {
     outline: none;
     box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.5);
+  }
+`;
+
+// Adicionando o componente MobileNotice
+export const MobileNotice = styled.div`
+  display: none;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+  width: 100%;
+  text-align: center;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+  
+  h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
   }
 `;
