@@ -1,12 +1,9 @@
 // MindMapView.jsx - Função de exportação aprimorada
 import React, { useRef, useState, useEffect } from 'react';
+
 import { useLocation, useNavigate } from 'react-router-dom';
+
 import { toPng } from 'html-to-image';
-import Radial from '../../components/MindMaps/Radial';
-import Hierarchical from '../../components/MindMaps/Hierarquico';
-import Linear from '../../components/MindMaps/Linear';
-import { Footer } from "../../components/Footer";
-import { DefaultButton } from "../../components/Button";
 
 import { theme } from "../../styles/theme";
 
@@ -19,6 +16,13 @@ import {
   NoDataMessage,
   LoadingOverlay
 } from './styles';
+
+// Componentes da aplicação
+import { DefaultButton, Footer } from '../../components';
+
+import Radial from '../../components/MindMaps/Radial';
+import Hierarchical from '../../components/MindMaps/Hierarquico';
+import Linear from '../../components/MindMaps/Linear';
 
 export function MindMapView() {
   const location = useLocation();

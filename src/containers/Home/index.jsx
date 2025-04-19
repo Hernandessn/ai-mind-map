@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 
-// Componentes da aplicação
-import { TemplateCards } from "../../components/TemplateCard";
-import { MapSection } from "../../components/MapSection";
-import { DefaultButton } from "../../components/Button";
-import { Footer } from "../../components/Footer";
-import { FileViewer } from '../../components/FileViewer';
-import { FilePreview } from '../../components/FilePreview';
-
-import { generateMindMap } from '../../utils/handleGenerateMap';
 // Estilos e tema
 import { theme } from "../../styles/theme";
 import {
@@ -41,10 +33,13 @@ import linearImage from '/src/assets/map-linear.png';
 import hierarquicoImage from '/src/assets/map-hierarquico.png';
 
 // Serviço que faz a chamada à IA
-import { ServicesGemini } from '../../services/ServicesGeminiAPI';
+import { generateMindMap } from '../../utils/handleGenerateMap';
 
 // Importando o hook
 import { useFileToText } from '../../hooks/useFileToText';
+
+// Componentes da aplicação
+import { DefaultButton, FilePreview, FileViewer, TemplateCards, MapSection, Footer } from '../../components';
 
 // Componente para exibir o texto extraído (debug)
 const DebugTextViewer = ({ text, isVisible }) => {
